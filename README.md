@@ -100,6 +100,58 @@ Run the pipeline with default settings:
 snakemake --cores 8 --use-conda
 ```
 
+
+## MultiQC Report Generation
+
+After running the RNA-seq pipeline, you can generate comprehensive MultiQC reports to visualize quality metrics across all samples.
+
+### Running the MultiQC Module
+
+The pipeline includes a standalone MultiQC module that can be run separately after pipeline completion:
+
+```bash
+snakemake -s myMultiQC.smk --use-singularity \
+  --config results_dir=/path/to/results/exp/ \
+          samples_csv=/path/to/samples.csv \
+          singularity_image=/path/to/rna_seq.sif
+```
+
+### Output
+The module automatically identifies sample types (paired-end or single-end) from your sample information file and generates the appropriate reports:
+
+> When both paired-end and single-end samples are present:
+
+results/exp/MultiQC/multiqc_paired_report.html
+results/exp/MultiQC/multiqc_single_report.html
+
+
+> When only one type is present:
+
+results/iRNA/MultiQC/multiqc_report.html
+
+
+
+## Using the Singularity Container
+
+To simplify dependency management, we provide a Singularity container with all required dependencies pre-installed.
+
+### Creating the Singularity Image
+
+You can create the Singularity image file (`.sif`) directly from Docker Hub:
+
+```bash
+# Make sure Singularity/Apptainer is installed on your system
+singularity pull rna_seq.sif docker://mtinti/rna_seq:latest
+```
+
+
+### Running the main pipeline
+```bash
+snakemake --use-singularity \
+  --config singularity_image=/path/to/rna_seq.sif \
+  --cores 8
+```
+
 ### Advanced Usage
 
 Run with custom parameters:
@@ -227,6 +279,7 @@ Run a test with the included test data:
 ```bash
 snakemake --cores 2 --use-conda -p --configfile test_config.yaml
 ```
+
 
 
 ## 🙏 Acknowledgments

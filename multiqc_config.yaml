@@ -1,0 +1,23 @@
+# MultiQC configuration
+fn_ignore_files:
+    - '*unique.txt.summary'
+# Use first part of path as sample name
+sample_names_regexes:
+  - '^results/iRNA/([^/]+)/'
+
+# Clean up file extensions for better sample names
+
+extra_fn_clean_exts:
+  - '.*'
+  - '_*'
+  - '.1'
+  - '.picard'
+  - '_qualimap_bam'
+  - '.1'  
+fn_ignore_files:
+    - '*_unique.txt.summary'
+
+# Define specific patterns to search for
+sp:
+  fastp:
+    fn: '*.fastp.*.json'
