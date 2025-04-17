@@ -1,0 +1,7 @@
+name: picard
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - deeptools=3.5.6

@@ -1,0 +1,57 @@
+# RNA-seq Pipeline Configuration - Modular Implementation
+
+# Core directories
+processing_dir: "processing"
+results_dir: "results"
+
+# Sample information
+samples_csv: "samples_full.csv"
+selected_samples: []  # Empty list means all samples are processed
+
+# Reference genome
+genome_index: "reference/genome_427/tb427"
+gtf_file: "reference/genome_427/tb427.gtf"  # GTF file for gene annotations
+
+# Processing parameters - applies to both paired-end and single-end samples
+cores_align: 8
+cores_coverage: 8
+cores_flagstat: 8  # For QC module
+cores_featurecounts: 8
+cores_fastp: 8
+cores_default: 1
+max_cores: 8
+feature_type: "CDS"
+
+# Mark Duplicates parameters
+remove_duplicates: False  # Set to true to remove duplicates, false to only mark them
+
+# QC parameters
+qualimap_memory: "10G"  # Memory allocation for Qualimap
+
+# Container images
+singularity_image: "/cluster/majf_lab/mtinti/rna_seq.sif"
+
+# Coverage track parameters
+coverage_bin_size: 50   # Bin size for bamCoverage
+coverage_normalize: "RPKM"  # Normalization method (RPKM, CPM, BPM, RPGC, None)
+
+#this set up the counts and track for the
+#pipline branch with unique reads, 
+#it does not affect the pipline branch
+#for total reads count and track
+min_mapping_quality: 2  # Minimum mapping quality for unique reads
+
+# File handling preferences
+copy_fastq: False        # Whether to copy FASTQ files to results directory
+copy_bam: False          # Whether to copy BAM files to results directory
+copy_benchmarks: False    # Whether to copy benchmark files to results directory
+copy_logs: False      # Whether to copy log files to results directory
+cleanup_processing: False  # Whether to remove processing directory after results are copied
+
+# Resource limits
+max_resources:
+  network: 3    # Maximum concurrent FTP downloads
+  io: 1000      # Maximum concurrent IO operations 
+
+
+benchmark_dir: "benchmarks"

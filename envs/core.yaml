@@ -1,0 +1,6 @@
+name: base
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - coreutils  # For basic file operations (cp, mv, etc.)

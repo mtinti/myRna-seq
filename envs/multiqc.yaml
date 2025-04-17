@@ -1,0 +1,7 @@
+name: picard
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - multiqc=1.28

@@ -1,0 +1,9 @@
+test_genome	Prediction	transcript	11	500	.	+	.	transcript_id "gene1.1"; gene_id "gene1";
+test_genome	Prediction	exon	11	500	.	+	.	transcript_id "gene1.1"; gene_id "gene1";
+test_genome	Prediction	CDS	11	500	.	+	0	transcript_id "gene1.1"; gene_id "gene1";
+test_genome	Prediction	transcript	2001	2500	.	+	.	transcript_id "gene2.1"; gene_id "gene2";
+test_genome	Prediction	exon	2001	2500	.	+	.	transcript_id "gene2.1"; gene_id "gene2";
+test_genome	Prediction	CDS	2001	2500	.	+	.	transcript_id "gene2.1"; gene_id "gene2";
+test_genome	Prediction	transcript	4001	4500	.	+	.	transcript_id "gene3.1"; gene_id "gene3";
+test_genome	Prediction	exon	4001	4500	.	+	.	transcript_id "gene3.1"; gene_id "gene3";
+test_genome	Prediction	CDS	4001	4500	.	+	.	transcript_id "gene3.1"; gene_id "gene3";

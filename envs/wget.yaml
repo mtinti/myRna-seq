@@ -1,0 +1,7 @@
+name: wget
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - wget
