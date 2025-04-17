@@ -1,4 +1,4 @@
-# 🧬 RNA-seq Processing Pipeline for Trypanosomatid Research
+# 🧬 RNA-seq Processing Pipeline
 
 A flexible and modular Snakemake workflow for processing RNA-seq data from trypanosomatids, supporting both paired-end and single-end reads from local and FTP sources.
 
