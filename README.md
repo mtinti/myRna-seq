@@ -112,7 +112,6 @@ The pipeline includes a standalone MultiQC module that can be run separately aft
 ```bash
 snakemake -s myMultiQC.smk --use-singularity \
   --config results_dir=/path/to/results/exp/ \
-          samples_csv=/path/to/samples.csv \
           singularity_image=/path/to/rna_seq.sif
 ```
 
