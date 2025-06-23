@@ -212,6 +212,9 @@ Required columns:
 - `checksum_1`: MD5 checksum for the first file (or the only file for single-end)
 - `checksum_2`: MD5 checksum for the second file (only for paired-end, leave empty for single-end)
 
+Optional columns:
+- `run_tag`: Merge samples for technical replicates. The final output folder will use this name.
+
 ## 🔍 Output Structure
 
 The pipeline organizes results in a clean directory structure:
