@@ -3,6 +3,8 @@
 # Core directories
 processing_dir: "processing"
 results_dir: "results"
+benchmark_dir: "benchmarks"
+
 
 # Sample information
 samples_csv: "samples_full.csv"
@@ -32,7 +34,7 @@ qualimap_memory: "10G"  # Memory allocation for Qualimap
 singularity_image: "/cluster/majf_lab/mtinti/rna_seq.sif"
 
 # Coverage track parameters
-coverage_bin_size: 50   # Bin size for bamCoverage
+coverage_bin_size: 10   # Bin size for bamCoverage
 coverage_normalize: "RPKM"  # Normalization method (RPKM, CPM, BPM, RPGC, None)
 
 #this set up the counts and track for the
@@ -54,4 +56,3 @@ max_resources:
   io: 1000      # Maximum concurrent IO operations 
 
 
-benchmark_dir: "benchmarks"

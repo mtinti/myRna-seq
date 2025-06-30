@@ -40,6 +40,11 @@ rule featurecounts_paired_all:
         gtf = config["processing_gtf_file"],
         feature_type = config["feature_type"],
         extra = "-p -B -C -M -O --countReadPairs"  # Paired-end specific options
+        # -B requireBothEndsMapped
+        # -p isPairedEnd
+        # -C If specified, the chimeric fragments will NOT be counted.
+        # -M countMultiMappingReads
+        # -O allowMultiOverlap
     log:
         get_processing_path("{run_tag}/logs/featurecounts_paired_all.log")
     benchmark:

@@ -40,11 +40,18 @@ rule copy_results:
         results_qc_dir = get_results_path("{run_tag}/qc"),
         results_benchmark_dir = get_results_path("{run_tag}/benchmarks"),
         results_logs_dir = get_results_path("{run_tag}/logs"),
+        
         # Config options for copying
         copy_bam = config.get("copy_bam", False),
         copy_fastq = config.get("copy_fastq", False),
         copy_benchmarks = config.get("copy_benchmarks", True),
         copy_logs = config.get("copy_logs", True)
+        
+        #copy_qc = config.get("copy_qc", True)
+        #copy_bigwig = config.get("copy_bigwig", True)
+        #copy_counts = config.get("copy_counts", True)
+       
+        
     log:
         get_processing_path("{run_tag}/logs/copy_results.log")
     shell:
