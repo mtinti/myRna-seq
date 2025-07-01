@@ -3,33 +3,18 @@ Rules for quality filtering with fastp for paired-end and split interleaved read
 """
 import os
 
-def get_fastp_input(wildcards):
-    """Return input files for the fastp rule.
-
-    Both ``split_complete`` and ``checksums`` keys are always present so the
-    shell block can reference them without conditional logic failing when mixing
-    sample types.
-    """
-
-    if SAMPLES_DF.loc[wildcards.sample, 'read_type'] == 'interleaved':
-        return {
-            'r1': get_processing_path(f"{wildcards.sample}/{wildcards.sample}.1.fastq.gz"),
-            'r2': get_processing_path(f"{wildcards.sample}/{wildcards.sample}.2.fastq.gz"),
-            'split_complete': get_processing_path(f"{wildcards.sample}/split_interleaved_complete.flag"),
-            'checksums': ''
-        }
-    else:
-        return {
-            'r1': get_processing_path(f"{wildcards.sample}/{wildcards.sample}.1.fastq.gz"),
-            'r2': get_processing_path(f"{wildcards.sample}/{wildcards.sample}.2.fastq.gz"),
-            'split_complete': '',
-            'checksums': get_processing_path(f"{wildcards.sample}/checksums_paired_verified.flag")
-        }
+def is_interleaved_sample(sample):
+    """Return True if the sample is marked as interleaved."""
+    return SAMPLES_DF.loc[sample, "read_type"] == "interleaved"
 
 # Rule for fastp processing of paired-end and split interleaved reads
 rule fastp_paired_end:
     input:
-        unpack(get_fastp_input)
+        r1 = lambda wc: get_processing_path(f"{wc.sample}/{wc.sample}.1.fastq.gz"),
+        r2 = lambda wc: get_processing_path(f"{wc.sample}/{wc.sample}.2.fastq.gz"),
+        checksums = lambda wc: get_processing_path(f"{wc.sample}/checksums_paired_verified.flag") if not is_interleaved_sample(wc.sample) else []
+    params:
+        split_complete = lambda wc: get_processing_path(f"{wc.sample}/split_interleaved_complete.flag") if is_interleaved_sample(wc.sample) else ""
     output:
         r1 = get_processing_path("{sample}/{sample}.1.cleaned.fastq.gz"),
         r2 = get_processing_path("{sample}/{sample}.2.cleaned.fastq.gz"),
@@ -54,9 +39,11 @@ rule fastp_paired_end:
         mkdir -p $(dirname {log})
         mkdir -p $(dirname {output.html})
         mkdir -p $(dirname {output.r1})
-        
+
+        split_flag="{params.split_complete}"
+
         # Determine input file type
-        if [[ -n "{input.split_complete}" && -f "{input.split_complete}" ]]; then
+        if [[ -n "$split_flag" && -f "$split_flag" ]]; then
             echo "Processing split interleaved files for {wildcards.sample}" > {log}
             input_r1={input.r1}
             input_r2={input.r2}
@@ -89,7 +76,7 @@ rule fastp_paired_end:
         fi
         
         # Create flag file to indicate completion
-        if [[ -n "{input.split_complete}" && -f "{input.split_complete}" ]]; then
+        if [[ -n "$split_flag" && -f "$split_flag" ]]; then
             sample_type="split interleaved"
         else
             sample_type="paired-end"

@@ -18,7 +18,7 @@ rule align_single_end:
         stats = get_processing_path("{sample}/qc/bowtie2/{sample}.bowtie2_single_stats.txt"),
         flag = get_processing_path("{sample}/alignment_single_complete.flag")
     params:
-        genome_index = config["processing_genome_index"],  # Use the copied genome index
+        genome_index = lambda wc: config["processing_genome_index"],  # Use the copied genome index
         # Read group parameters
         rg_id = lambda wildcards: wildcards.sample,
         rg_sm = lambda wildcards: wildcards.sample,
