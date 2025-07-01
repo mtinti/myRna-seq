@@ -239,7 +239,18 @@ rule all:
         acquisition_flags = [get_acquisition_flag(sample) for sample in SAMPLES],
         checksum_flags = [get_checksum_flag(sample) for sample in SAMPLES],
         fastp_flags = [get_fastp_flag(sample) for sample in SAMPLES],
-        split_flags = [get_processing_path(f"{sample}/{sample}.1.fastq.gz") for sample in SAMPLES if SAMPLES_DF.loc[sample, 'read_type'] == 'interleaved'],
+        # Files generated from the interleaved splitting step
+        split_fastqs = [
+            get_processing_path(f"{sample}/{sample}.{i}.fastq.gz")
+            for sample in SAMPLES
+            if SAMPLES_DF.loc[sample, 'read_type'] == 'interleaved'
+            for i in [1, 2]
+        ],
+        split_flags = [
+            get_processing_path(f"{sample}/split_interleaved_complete.flag")
+            for sample in SAMPLES
+            if SAMPLES_DF.loc[sample, 'read_type'] == 'interleaved'
+        ],
         alignment_flags = [get_alignment_flag(sample) for sample in SAMPLES],
         
         # Then merge and process all effective samples (run tags or standalone samples)
