@@ -2,9 +2,15 @@
 Rules for quality filtering with fastp for single-end reads
 """
 import os
+import re
 
 # Rule for fastp processing of single-end reads
 rule fastp_single_end:
+    wildcard_constraints:
+        sample = "|".join([
+            re.escape(s) for s in SAMPLES
+            if SAMPLES_DF.loc[s, 'read_type'] == 'single'
+        ])
     input:
         r = get_fastq_single,
         checksums = get_processing_path("{sample}/checksums_single_verified.flag")
