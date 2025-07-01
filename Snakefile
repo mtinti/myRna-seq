@@ -178,7 +178,9 @@ if len(SINGLE_LOCAL_SAMPLES) + len(SINGLE_FTP_SAMPLES) > 0:
     include: "rules/checksum/single_checksum.smk"
 
 # Quality filtering rules
-if len(PAIRED_LOCAL_SAMPLES) + len(PAIRED_FTP_SAMPLES) > 0:
+if len(PAIRED_LOCAL_SAMPLES) + len(PAIRED_FTP_SAMPLES) + len([
+    s for s in SAMPLES if SAMPLES_DF.loc[s, 'read_type'] == 'interleaved'
+]) > 0:
     include: "rules/fastp/paired_fastp.smk"
 
 if len(SINGLE_LOCAL_SAMPLES) + len(SINGLE_FTP_SAMPLES) > 0:
