@@ -6,20 +6,28 @@ import os
 import re
 
 def get_align_input(wildcards):
-    # Check if the sample is interleaved
+    """Return input files for the bowtie2 alignment rule.
+
+    As with the fastp rule we always provide ``split_complete`` and ``fastp_flag``
+    keys so that the shell block can reference them even when they are not
+    applicable to a particular sample type.
+    """
+
     if SAMPLES_DF.loc[wildcards.sample, 'read_type'] == 'interleaved':
-        # Use the split files as input and ensure the splitting step was run
+
         return {
-            'r1': get_processing_path(f"{{sample}}/{{sample}}.1.cleaned.fastq.gz"),
-            'r2': get_processing_path(f"{{sample}}/{{sample}}.2.cleaned.fastq.gz"),
-            'split_complete': get_processing_path(f"{{sample}}/split_interleaved_complete.flag")
+            'r1': get_processing_path(f"{wildcards.sample}/{wildcards.sample}.1.cleaned.fastq.gz"),
+            'r2': get_processing_path(f"{wildcards.sample}/{wildcards.sample}.2.cleaned.fastq.gz"),
+            'split_complete': get_processing_path(f"{wildcards.sample}/split_interleaved_complete.flag"),
+            'fastp_flag': get_processing_path(f"{wildcards.sample}/fastp_paired_complete.flag")
+
         }
     else:
-        # Use the original paired-end files as input
         return {
-            'r1': get_processing_path(f"{{sample}}/{{sample}}.1.cleaned.fastq.gz"),
-            'r2': get_processing_path(f"{{sample}}/{{sample}}.2.cleaned.fastq.gz"),
-            'fastp_flag': get_processing_path("{sample}/fastp_paired_complete.flag")
+            'r1': get_processing_path(f"{wildcards.sample}/{wildcards.sample}.1.cleaned.fastq.gz"),
+            'r2': get_processing_path(f"{wildcards.sample}/{wildcards.sample}.2.cleaned.fastq.gz"),
+            'split_complete': '',
+            'fastp_flag': get_processing_path(f"{wildcards.sample}/fastp_paired_complete.flag")
         }
 
 # Rule for aligning paired-end and split interleaved reads with bowtie2
@@ -61,7 +69,8 @@ rule align_paired_end:
         mkdir -p $(dirname {output.stats})
         
         # Determine input file type
-        if [[ -n "{input.split_complete}" && -f {input.split_complete} ]]; then
+
+        if [[ -n "{input.split_complete}" && -f "{input.split_complete}" ]]; then
             echo "Aligning split interleaved reads for {wildcards.sample}" > {log}
             input_r1={input.r1}
             input_r2={input.r2}
@@ -163,7 +172,8 @@ rule align_paired_end:
         fi
         
         # Create flag file to indicate completion
-        if [[ -n "{input.split_complete}" && -f {input.split_complete} ]]; then
+
+        if [[ -n "{input.split_complete}" && -f "{input.split_complete}" ]]; then
             sample_type="split interleaved"
         else
             sample_type="paired-end"
