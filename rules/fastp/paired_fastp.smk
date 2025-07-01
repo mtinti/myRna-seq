@@ -50,7 +50,7 @@ rule fastp_paired_end:
         mkdir -p $(dirname {output.r1})
         
         # Determine input file type
-        if [[ -f {input.split_complete} ]]; then
+        if [[ -n "{input.split_complete}" && -f {input.split_complete} ]]; then
             echo "Processing split interleaved files for {wildcards.sample}" > {log}
             input_r1={input.r1}
             input_r2={input.r2}
@@ -83,7 +83,7 @@ rule fastp_paired_end:
         fi
         
         # Create flag file to indicate completion
-        if [[ -f {input.split_complete} ]]; then
+        if [[ -n "{input.split_complete}" && -f {input.split_complete} ]]; then
             sample_type="split interleaved"
         else
             sample_type="paired-end"

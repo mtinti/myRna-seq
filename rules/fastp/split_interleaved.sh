@@ -7,7 +7,7 @@
 if [ $# -ne 2 ]; then
     echo "Usage: $0 <input_interleaved.fastq.gz> <output_prefix>"
     echo "Example: $0 sample_interleaved.fastq.gz sample"
-    echo "Output: sample_1.fq.gz and sample_2.fq.gz"
+    echo "Output: sample_1.fastq.gz and sample_2.fastq.gz"
     exit 1
 fi
 
@@ -50,19 +50,19 @@ BEGIN {
 echo "Modifying headers and compressing..."
 
 # Process R1 file: modify headers and compress
-awk '{print (NR%4 == 1) ? "@1_" ++i " READ/1": $0}' "$TEMP_DIR/temp_R1.fastq" | gzip > "${OUTPUT_PREFIX}.1.fq.gz"
+awk '{print (NR%4 == 1) ? "@1_" ++i " READ/1": $0}' "$TEMP_DIR/temp_R1.fastq" | gzip > "${OUTPUT_PREFIX}.1.fastq.gz"
 
 # Process R2 file: modify headers and compress
-awk '{print (NR%4 == 1) ? "@1_" ++i " READ/2": $0}' "$TEMP_DIR/temp_R2.fastq" | gzip > "${OUTPUT_PREFIX}.2.fq.gz"
+awk '{print (NR%4 == 1) ? "@1_" ++i " READ/2": $0}' "$TEMP_DIR/temp_R2.fastq" | gzip > "${OUTPUT_PREFIX}.2.fastq.gz"
 
 echo "Done!"
 echo "Created files:"
-echo "  ${OUTPUT_PREFIX}.1.fq.gz"
-echo "  ${OUTPUT_PREFIX}.2.fq.gz"
+echo "  ${OUTPUT_PREFIX}.1.fastq.gz"
+echo "  ${OUTPUT_PREFIX}.2.fastq.gz"
 
 # Optional: show some statistics
-R1_READS=$(zcat "${OUTPUT_PREFIX}.1.fq.gz" | wc -l | awk '{print $1/4}')
-R2_READS=$(zcat "${OUTPUT_PREFIX}.2.fq.gz" | wc -l | awk '{print $1/4}')
+R1_READS=$(zcat "${OUTPUT_PREFIX}.1.fastq.gz" | wc -l | awk '{print $1/4}')
+R2_READS=$(zcat "${OUTPUT_PREFIX}.2.fastq.gz" | wc -l | awk '{print $1/4}')
 
 echo "Statistics:"
 echo "  R1 reads: $R1_READS"
