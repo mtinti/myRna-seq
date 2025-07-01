@@ -26,7 +26,6 @@ def get_align_input(wildcards):
         return {
             'r1': get_processing_path(f"{wildcards.sample}/{wildcards.sample}.1.cleaned.fastq.gz"),
             'r2': get_processing_path(f"{wildcards.sample}/{wildcards.sample}.2.cleaned.fastq.gz"),
-            'split_complete': '',
             'fastp_flag': get_processing_path(f"{wildcards.sample}/fastp_paired_complete.flag")
         }
 
@@ -42,6 +41,7 @@ rule align_paired_end:
         stats = get_processing_path("{sample}/qc/bowtie2/{sample}.bowtie2_paired_stats.txt"),
         flag = get_processing_path("{sample}/alignment_paired_complete.flag")
     params:
+        split_complete = lambda wc: get_processing_path(f"{wc.sample}/split_interleaved_complete.flag") if SAMPLES_DF.loc[wc.sample, 'read_type'] == 'interleaved' else "",
         genome_index = config["processing_genome_index"],  # Use the copied genome index
         # Read group parameters
         rg_id = lambda wildcards: wildcards.sample,
@@ -70,12 +70,13 @@ rule align_paired_end:
         
         # Determine input file type
 
-        if [[ -n "{input.split_complete}" && -f "{input.split_complete}" ]]; then
-            echo "Aligning split interleaved reads for {wildcards.sample}" > {log}
+        split_flag="{params.split_complete}"
+        if [[ -n "$split_flag" && -f "$split_flag" ]]; then
+        echo "Aligning split interleaved reads for {wildcards.sample}" > {log}
             input_r1={input.r1}
             input_r2={input.r2}
         else
-            echo "Aligning paired-end reads for {wildcards.sample}" > {log}
+        echo "Aligning paired-end reads for {wildcards.sample}" > {log}
             input_r1={input.r1}
             input_r2={input.r2}
         fi
@@ -173,7 +174,7 @@ rule align_paired_end:
         
         # Create flag file to indicate completion
 
-        if [[ -n "{input.split_complete}" && -f "{input.split_complete}" ]]; then
+        if [[ -n "$split_flag" && -f "$split_flag" ]]; then
             sample_type="split interleaved"
         else
             sample_type="paired-end"
