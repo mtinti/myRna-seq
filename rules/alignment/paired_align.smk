@@ -8,11 +8,11 @@ import re
 def get_align_input(wildcards):
     # Check if the sample is interleaved
     if SAMPLES_DF.loc[wildcards.sample, 'read_type'] == 'interleaved':
-        # Use the split files as input
+        # Use the split files as input and ensure the splitting step was run
         return {
             'r1': get_processing_path(f"{{sample}}/{{sample}}.1.cleaned.fastq.gz"),
             'r2': get_processing_path(f"{{sample}}/{{sample}}.2.cleaned.fastq.gz"),
-            #'split_complete': get_processing_path(f"{{sample}}/split_interleaved_complete.flag")
+            'split_complete': get_processing_path(f"{{sample}}/split_interleaved_complete.flag")
         }
     else:
         # Use the original paired-end files as input
@@ -61,7 +61,7 @@ rule align_paired_end:
         mkdir -p $(dirname {output.stats})
         
         # Determine input file type
-        if [[ -f {input.split_complete} ]]; then
+        if [[ -n "{input.split_complete}" && -f {input.split_complete} ]]; then
             echo "Aligning split interleaved reads for {wildcards.sample}" > {log}
             input_r1={input.r1}
             input_r2={input.r2}
@@ -163,7 +163,7 @@ rule align_paired_end:
         fi
         
         # Create flag file to indicate completion
-        if [[ -f {input.split_complete} ]]; then
+        if [[ -n "{input.split_complete}" && -f {input.split_complete} ]]; then
             sample_type="split interleaved"
         else
             sample_type="paired-end"

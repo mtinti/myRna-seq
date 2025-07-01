@@ -3,9 +3,10 @@ rule split_interleaved:
         fastq    = get_fastq_single,
         checksums = get_processing_path("{sample}/checksums_single_verified.flag")
     output:
-        # Match the script’s naming: <prefix>.1.fq.gz and <prefix>.2.fq.gz
-        r1       = get_processing_path("{sample}/{sample}.1.fq.gz"),
-        r2       = get_processing_path("{sample}/{sample}.2.fq.gz"),
+        # Outputs use the standard *.fastq.gz extension so downstream rules can
+        # treat the files just like regular paired-end reads.
+        r1       = get_processing_path("{sample}/{sample}.1.fastq.gz"),
+        r2       = get_processing_path("{sample}/{sample}.2.fastq.gz"),
         flag     = get_processing_path("{sample}/split_interleaved_complete.flag")
     log:
         get_processing_path("{sample}/logs/split_interleaved.log")
