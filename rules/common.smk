@@ -70,6 +70,13 @@ def is_paired_end(sample_or_run_tag):
     if is_run_tag(sample_or_run_tag):
         return get_run_tag_read_type(sample_or_run_tag) == 'paired'
     return get_read_type(sample_or_run_tag) == 'paired'
+    
+def is_interleaved(sample_or_run_tag):
+    """Check if sample or run tag is paired-end"""
+    if is_run_tag(sample_or_run_tag):
+        return get_run_tag_read_type(sample_or_run_tag) == 'interleaved'
+    return get_read_type(sample_or_run_tag) == 'interleaved'    
+    
 
 def is_single_end(sample_or_run_tag):
     """Check if sample or run tag is single-end"""
@@ -168,21 +175,21 @@ def get_merge_flag(run_tag):
 
 def get_qc_flag(run_tag):
     """Get the appropriate QC flag based on run tag type"""
-    if is_paired_end(run_tag):
+    if is_paired_end(run_tag) or is_interleaved(run_tag):
         return get_processing_path(f"{run_tag}/qc_paired_complete.flag")
     else:
         return get_processing_path(f"{run_tag}/qc_single_complete.flag")
 
 def get_coverage_flag(run_tag):
     """Get the appropriate coverage flag based on run tag type"""
-    if is_paired_end(run_tag):
+    if is_paired_end(run_tag) or is_interleaved(run_tag):
         return get_processing_path(f"{run_tag}/coverage_paired_complete.flag")
     else:
         return get_processing_path(f"{run_tag}/coverage_single_complete.flag")
 
 def get_featurecounts_flag(run_tag):
     """Get the appropriate feature counting flag based on run tag type"""
-    if is_paired_end(run_tag):
+    if is_paired_end(run_tag) or is_interleaved(run_tag):
         return get_processing_path(f"{run_tag}/featurecounts_paired_complete.flag")
     else:
         return get_processing_path(f"{run_tag}/featurecounts_single_complete.flag")

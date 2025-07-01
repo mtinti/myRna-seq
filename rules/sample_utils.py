@@ -1,6 +1,5 @@
 """
 Utility functions for sample handling in the RNA-seq pipeline.
-Extracts common functionality from Snakefile for better organization.
 """
 import os
 import pandas as pd
@@ -123,7 +122,6 @@ def load_samples(config):
             print(f"Error: {error_msg}")
             raise FileNotFoundError(error_msg)
         
-        
         samples_df = pd.read_csv(config['samples_csv'])
         
         print(f"Columns in sample file: {', '.join(samples_df.columns)}")
@@ -143,9 +141,8 @@ def load_samples(config):
             print(f"\033[91mError: {error_msg}\033[0m")
             raise ValueError(error_msg)        
         
-        
         # Validate read_type values
-        valid_read_types = ['single', 'paired']
+        valid_read_types = ['single', 'paired', 'interleaved']
         invalid_read_types = samples_df[~samples_df['read_type'].isin(valid_read_types)]['read_type'].unique()
         
         if len(invalid_read_types) > 0:
@@ -166,10 +163,10 @@ def load_samples(config):
                 if pd.isna(row.get('file_path_1', None)) or pd.isna(row.get('file_path_2', None)):
                     print(f"Error: Missing file_path_1 or file_path_2 for paired-end sample {row['sample_name']}")
                     raise ValueError(f"Missing file_path_1 or file_path_2 for paired-end sample {row['sample_name']}")
-            else:  # single-end
+            else:  # single-end or interleaved
                 if pd.isna(row.get('file_path_1', None)):
-                    print(f"Error: Missing file_path_1 for single-end sample {row['sample_name']}")
-                    raise ValueError(f"Missing file_path_1 for single-end sample {row['sample_name']}")
+                    print(f"Error: Missing file_path_1 for {row['read_type']} sample {row['sample_name']}")
+                    raise ValueError(f"Missing file_path_1 for {row['read_type']} sample {row['sample_name']}")
         
         # Filter samples if specified
         if config['selected_samples']:
@@ -241,9 +238,9 @@ def load_samples(config):
         # Create directories for all samples
         print(f"Loaded {len(samples_df)} samples:")
         for sample, row in samples_df.iterrows():
-            sample_type = "paired" if row['read_type'] == 'paired' else "single"
+            sample_type = row['read_type']
             source_type = row['source_type']
-            print(f"  {sample}: {sample_type}-end, {source_type} source")
+            print(f"  {sample}: {sample_type}, {source_type} source")
             create_sample_directories(config, sample)
         
         return samples_df, run_tag_samples, run_tags, effective_samples
@@ -288,8 +285,8 @@ def is_sample_completed(config, sample, samples_df):
         # Check for final results
         final_results_exist = True
         
-        # For paired-end samples
-        if samples_df.loc[sample, 'read_type'] == 'paired':
+        # For paired-end and interleaved samples (after splitting)
+        if samples_df.loc[sample, 'read_type'] in ['paired', 'interleaved']:
             # Check if counts files exist
             paired_counts_all = os.path.join(config['results_dir'], effective_name, f"{effective_name}_counts_paired_all.txt")
             paired_counts_unique = os.path.join(config['results_dir'], effective_name, f"{effective_name}_counts_paired_unique.txt")

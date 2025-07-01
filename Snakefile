@@ -116,14 +116,14 @@ for sample in SAMPLES:
 # Categorize samples by type
 PAIRED_LOCAL_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] == 'paired') and (SAMPLES_DF.loc[s, 'source_type'] == 'local')]
 PAIRED_FTP_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] == 'paired') and (SAMPLES_DF.loc[s, 'source_type'] == 'ftp')]
-SINGLE_LOCAL_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] == 'single') and (SAMPLES_DF.loc[s, 'source_type'] == 'local')]
-SINGLE_FTP_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] == 'single') and (SAMPLES_DF.loc[s, 'source_type'] == 'ftp')]
+SINGLE_LOCAL_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] in ['single', 'interleaved']) and (SAMPLES_DF.loc[s, 'source_type'] == 'local')]
+SINGLE_FTP_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] in ['single', 'interleaved']) and (SAMPLES_DF.loc[s, 'source_type'] == 'ftp')]
 
 # Print sample categorization
 print(f"Paired-end, local samples: {len(PAIRED_LOCAL_SAMPLES)}")
 print(f"Paired-end, FTP samples: {len(PAIRED_FTP_SAMPLES)}")
-print(f"Single-end, local samples: {len(SINGLE_LOCAL_SAMPLES)}")
-print(f"Single-end, FTP samples: {len(SINGLE_FTP_SAMPLES)}")
+print(f"Single-end/Interleaved, local samples: {len(SINGLE_LOCAL_SAMPLES)}")
+print(f"Single-end/Interleaved, FTP samples: {len(SINGLE_FTP_SAMPLES)}")
 print(f"Run tags to process: {len(RUN_TAGS_TO_PROCESS)}")
 print(f"Effective samples to process: {len(EFFECTIVE_SAMPLES_TO_PROCESS)}")
 
@@ -184,11 +184,15 @@ if len(PAIRED_LOCAL_SAMPLES) + len(PAIRED_FTP_SAMPLES) > 0:
 if len(SINGLE_LOCAL_SAMPLES) + len(SINGLE_FTP_SAMPLES) > 0:
     include: "rules/fastp/single_fastp.smk"
 
+# Interleaved file splitting rule
+if any(SAMPLES_DF.loc[s, 'read_type'] == 'interleaved' for s in SAMPLES):
+    include: "rules/fastp/split_interleaved.smk"
+
 # Alignment rules
-if len(PAIRED_LOCAL_SAMPLES) + len(PAIRED_FTP_SAMPLES) > 0:
+if len(PAIRED_LOCAL_SAMPLES) + len(PAIRED_FTP_SAMPLES) + len([s for s in SAMPLES if SAMPLES_DF.loc[s, 'read_type'] == 'interleaved']) > 0:
     include: "rules/alignment/paired_align.smk"
 
-if len(SINGLE_LOCAL_SAMPLES) + len(SINGLE_FTP_SAMPLES) > 0:
+if len([s for s in SINGLE_LOCAL_SAMPLES + SINGLE_FTP_SAMPLES if SAMPLES_DF.loc[s, 'read_type'] == 'single']) > 0:
     include: "rules/alignment/single_align.smk"
 
 # BAM merging rule (new module)
@@ -200,24 +204,24 @@ include: "rules/processing/mark_duplicates.smk"
 # QC rules
 include: "rules/qc/bam_qc.smk"
 
-if any(is_paired_end(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
+if any(is_paired_end(run_tag) or SAMPLES_DF.loc[run_tag, 'read_type'] == 'interleaved' for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
     include: "rules/qc/paired_rnaseq.smk"
 
-if any(is_single_end(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
+if any(is_single_end(run_tag) and SAMPLES_DF.loc[run_tag, 'read_type'] != 'interleaved' for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
     include: "rules/qc/single_rnaseq.smk"
 
 # Coverage track generation rules
-if any(is_paired_end(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
+if any(is_paired_end(run_tag) or SAMPLES_DF.loc[run_tag, 'read_type'] == 'interleaved' for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
     include: "rules/coverage/paired_coverage.smk"
 
-if any(is_single_end(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
+if any(is_single_end(run_tag) and SAMPLES_DF.loc[run_tag, 'read_type'] != 'interleaved' for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
     include: "rules/coverage/single_coverage.smk"
 
 # Feature counting rules
-if any(is_paired_end(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
+if any(is_paired_end(run_tag) or SAMPLES_DF.loc[run_tag, 'read_type'] == 'interleaved' for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
     include: "rules/counting/paired_counts.smk"
 
-if any(is_single_end(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
+if any(is_single_end(run_tag) and SAMPLES_DF.loc[run_tag, 'read_type'] != 'interleaved' for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
     include: "rules/counting/single_counts.smk"
 
 # Benchmarking rules
@@ -233,6 +237,7 @@ rule all:
         acquisition_flags = [get_acquisition_flag(sample) for sample in SAMPLES],
         checksum_flags = [get_checksum_flag(sample) for sample in SAMPLES],
         fastp_flags = [get_fastp_flag(sample) for sample in SAMPLES],
+        split_flags = [get_processing_path(f"{sample}/{sample}.1.fastq.gz") for sample in SAMPLES if SAMPLES_DF.loc[sample, 'read_type'] == 'interleaved'],
         alignment_flags = [get_alignment_flag(sample) for sample in SAMPLES],
         
         # Then merge and process all effective samples (run tags or standalone samples)
@@ -251,14 +256,15 @@ workflow_steps = [
     "01 - Input Handling",
     "02 - Checksum Verification",
     "03 - Quality Filtering",
-    "04 - Genome Alignment", 
-    "05 - BAM Merging by Run Tag",
-    "06 - Mark Duplicates",
-    "07 - BAM Quality Control",
-    "08 - Coverage Tracks",
-    "09 - Feature Counting",
-    "10 - Benchmark Analysis",
-    "11 - Copy Results"
+    "04 - Interleaved File Splitting",
+    "05 - Genome Alignment", 
+    "06 - BAM Merging by Run Tag",
+    "07 - Mark Duplicates",
+    "08 - BAM Quality Control",
+    "09 - Coverage Tracks",
+    "10 - Feature Counting",
+    "11 - Benchmark Analysis",
+    "12 - Copy Results"
 ]
 
 onsuccess:

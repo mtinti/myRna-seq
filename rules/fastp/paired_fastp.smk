@@ -1,14 +1,29 @@
 """
-Rules for quality filtering with fastp for paired-end reads
+Rules for quality filtering with fastp for paired-end and split interleaved reads
 """
 import os
 
-# Rule for fastp processing of paired-end reads
+def get_fastp_input(wildcards):
+    # Check if the sample is interleaved
+    if SAMPLES_DF.loc[wildcards.sample, 'read_type'] == 'interleaved':
+        # Use the split files as input
+        return {
+            'r1': get_processing_path(f"{{sample}}/{{sample}}.1.fastq.gz"),
+            'r2': get_processing_path(f"{{sample}}/{{sample}}.2.fastq.gz"),
+            'split_complete': get_processing_path(f"{{sample}}/split_interleaved_complete.flag")
+        }
+    else:
+        # Use the original paired-end files as input
+        return {
+            'r1': get_processing_path(f"{{sample}}/{{sample}}.1.fastq.gz"),
+            'r2': get_processing_path(f"{{sample}}/{{sample}}.2.fastq.gz"),
+            'checksums': get_processing_path("{sample}/checksums_paired_verified.flag")
+        }
+
+# Rule for fastp processing of paired-end and split interleaved reads
 rule fastp_paired_end:
     input:
-        r1 = get_fastq_r1,
-        r2 = get_fastq_r2,
-        checksums = get_processing_path("{sample}/checksums_paired_verified.flag")
+        unpack(get_fastp_input)
     output:
         r1 = get_processing_path("{sample}/{sample}.1.cleaned.fastq.gz"),
         r2 = get_processing_path("{sample}/{sample}.2.cleaned.fastq.gz"),
@@ -23,7 +38,6 @@ rule fastp_paired_end:
         config["cores_fastp"]
     resources:
         mem_mb = lambda wildcards: config.get("mem_fastp", 4000)
-    # Container and environment options
     conda:
         "../../envs/fastp.yaml"
     singularity:
@@ -35,18 +49,27 @@ rule fastp_paired_end:
         mkdir -p $(dirname {output.html})
         mkdir -p $(dirname {output.r1})
         
-        echo "Processing paired-end fastq files for {wildcards.sample}" > {log}
+        # Determine input file type
+        if [[ -f {input.split_complete} ]]; then
+            echo "Processing split interleaved files for {wildcards.sample}" > {log}
+            input_r1={input.r1}
+            input_r2={input.r2}
+        else
+            echo "Processing paired-end fastq files for {wildcards.sample}" > {log}
+            input_r1={input.r1}
+            input_r2={input.r2}
+        fi
         
         # Check if output files already exist and have content
         if [[ -s {output.r1} && -s {output.r2} && -s {output.html} && -s {output.json} ]]; then
             echo "Fastp outputs already exist for {wildcards.sample}, skipping processing" >> {log}
         else
             echo "Running fastp on {wildcards.sample}" >> {log}
-            echo "Input files: {input.r1} and {input.r2}" >> {log}
+            echo "Input files: $input_r1 and $input_r2" >> {log}
             echo "Output files: {output.r1} and {output.r2}" >> {log}
             
             # Process files
-            fastp -i {input.r1} -I {input.r2} \\
+            fastp -i $input_r1 -I $input_r2 \\
                 -o {output.r1} -O {output.r2} \\
                 -h {output.html} -j {output.json} \\
                 -w {threads} \\
@@ -60,11 +83,16 @@ rule fastp_paired_end:
         fi
         
         # Create flag file to indicate completion
-        echo "Fastp processing complete for paired-end sample {wildcards.sample}" > {output.flag}
+        if [[ -f {input.split_complete} ]]; then
+            sample_type="split interleaved"
+        else
+            sample_type="paired-end"
+        fi
+        echo "Fastp processing complete for $sample_type sample {wildcards.sample}" > {output.flag}
         echo "Timestamp: $(date)" >> {output.flag}
         echo "Files processed:" >> {output.flag}
-        echo "- Input R1: {input.r1}" >> {output.flag}
-        echo "- Input R2: {input.r2}" >> {output.flag}
+        echo "- Input R1: $input_r1" >> {output.flag}
+        echo "- Input R2: $input_r2" >> {output.flag}
         echo "- Output R1: {output.r1}" >> {output.flag}
         echo "- Output R2: {output.r2}" >> {output.flag}
         echo "- HTML report: {output.html}" >> {output.flag}

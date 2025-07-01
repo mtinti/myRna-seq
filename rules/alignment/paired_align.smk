@@ -1,18 +1,33 @@
 """
-Rules for alignment with bowtie2 for paired-end reads
+Rules for alignment with bowtie2 for paired-end and split interleaved reads
 Including read group information for Picard compatibility
 """
 import os
 import re
 
-# Rule for aligning paired-end reads with bowtie2
+def get_align_input(wildcards):
+    # Check if the sample is interleaved
+    if SAMPLES_DF.loc[wildcards.sample, 'read_type'] == 'interleaved':
+        # Use the split files as input
+        return {
+            'r1': get_processing_path(f"{{sample}}/{{sample}}.1.cleaned.fastq.gz"),
+            'r2': get_processing_path(f"{{sample}}/{{sample}}.2.cleaned.fastq.gz"),
+            #'split_complete': get_processing_path(f"{{sample}}/split_interleaved_complete.flag")
+        }
+    else:
+        # Use the original paired-end files as input
+        return {
+            'r1': get_processing_path(f"{{sample}}/{{sample}}.1.cleaned.fastq.gz"),
+            'r2': get_processing_path(f"{{sample}}/{{sample}}.2.cleaned.fastq.gz"),
+            'fastp_flag': get_processing_path("{sample}/fastp_paired_complete.flag")
+        }
+
+# Rule for aligning paired-end and split interleaved reads with bowtie2
 rule align_paired_end:
     wildcard_constraints:
-        sample = "|".join([re.escape(s) for s in PAIRED_LOCAL_SAMPLES + PAIRED_FTP_SAMPLES])
+        sample = "|".join([re.escape(s) for s in PAIRED_LOCAL_SAMPLES + PAIRED_FTP_SAMPLES + [s for s in SAMPLES if SAMPLES_DF.loc[s, 'read_type'] == 'interleaved']])
     input:
-        r1 = get_cleaned_fastq_r1,
-        r2 = get_cleaned_fastq_r2,
-        fastp_flag = get_processing_path("{sample}/fastp_paired_complete.flag")
+        unpack(get_align_input)
     output:
         bam = get_processing_path("{sample}/{sample}.bam"),
         bai = get_processing_path("{sample}/{sample}.bam.bai"),
@@ -34,7 +49,6 @@ rule align_paired_end:
         config["cores_align"]
     resources:
         mem_mb = 8000
-    # Container and environment options
     conda:
         "../../envs/alignment.yaml"
     singularity:
@@ -46,10 +60,19 @@ rule align_paired_end:
         mkdir -p $(dirname {output.bam})
         mkdir -p $(dirname {output.stats})
         
-        # Start logging
-        echo "Aligning paired-end reads for {wildcards.sample}" > {log}
+        # Determine input file type
+        if [[ -f {input.split_complete} ]]; then
+            echo "Aligning split interleaved reads for {wildcards.sample}" > {log}
+            input_r1={input.r1}
+            input_r2={input.r2}
+        else
+            echo "Aligning paired-end reads for {wildcards.sample}" > {log}
+            input_r1={input.r1}
+            input_r2={input.r2}
+        fi
+        
         echo "Using genome index: {params.genome_index}" >> {log}
-        echo "Input files: {input.r1} and {input.r2}" >> {log}
+        echo "Input files: $input_r1 and $input_r2" >> {log}
         echo "Output BAM: {output.bam}" >> {log}
         echo "Including read group information:" >> {log}
         echo "  RG ID: {params.rg_id}" >> {log}
@@ -67,13 +90,13 @@ rule align_paired_end:
         fi
         
         # Check if input files exist and have content
-        if [[ ! -s {input.r1} ]]; then
-            echo "ERROR: Input file {input.r1} does not exist or is empty!" >> {log}
+        if [[ ! -s $input_r1 ]]; then
+            echo "ERROR: Input file $input_r1 does not exist or is empty!" >> {log}
             exit 1
         fi
         
-        if [[ ! -s {input.r2} ]]; then
-            echo "ERROR: Input file {input.r2} does not exist or is empty!" >> {log}
+        if [[ ! -s $input_r2 ]]; then
+            echo "ERROR: Input file $input_r2 does not exist or is empty!" >> {log}
             exit 1
         fi
         
@@ -106,7 +129,7 @@ rule align_paired_end:
             
             # Run alignment with bowtie2 with read group information
             echo "Command: bowtie2 --very-sensitive-local -p {threads} -x {params.genome_index} \\
-                     -1 {input.r1} -2 {input.r2} \\
+                     -1 $input_r1 -2 $input_r2 \\
                      --rg-id '{params.rg_id}' \\
                      --rg 'SM:{params.rg_sm}' \\
                      --rg 'LB:{params.rg_lb}' \\
@@ -115,7 +138,7 @@ rule align_paired_end:
             
             # Run with output captured to QC file
             (bowtie2 --very-sensitive-local -p {threads} -x {params.genome_index} \\
-                     -1 {input.r1} -2 {input.r2} \\
+                     -1 $input_r1 -2 $input_r2 \\
                      --rg-id '{params.rg_id}' \\
                      --rg 'SM:{params.rg_sm}' \\
                      --rg 'LB:{params.rg_lb}' \\
@@ -140,7 +163,12 @@ rule align_paired_end:
         fi
         
         # Create flag file to indicate completion
-        echo "Alignment complete for paired-end sample {wildcards.sample}" > {output.flag}
+        if [[ -f {input.split_complete} ]]; then
+            sample_type="split interleaved"
+        else
+            sample_type="paired-end"
+        fi
+        echo "Alignment complete for $sample_type sample {wildcards.sample}" > {output.flag}
         echo "Timestamp: $(date)" >> {output.flag}
         echo "Files created:" >> {output.flag}
         echo "- BAM file: {output.bam}" >> {output.flag}
