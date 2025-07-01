@@ -157,14 +157,14 @@ def get_checksum_flag(sample):
 
 def get_fastp_flag(sample):
     """Get the appropriate fastp flag based on sample type"""
-    if is_paired_end(sample):
+    if is_paired_end(sample) or is_interleaved(sample):
         return get_processing_path(f"{sample}/fastp_paired_complete.flag")
     else:
         return get_processing_path(f"{sample}/fastp_single_complete.flag")
 
 def get_alignment_flag(sample):
     """Get the appropriate alignment flag based on sample type"""
-    if is_paired_end(sample):
+    if is_paired_end(sample) or is_interleaved(sample):
         return get_processing_path(f"{sample}/alignment_paired_complete.flag")
     else:
         return get_processing_path(f"{sample}/alignment_single_complete.flag")
