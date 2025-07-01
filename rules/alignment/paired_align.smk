@@ -43,6 +43,7 @@ rule align_paired_end:
         stats = get_processing_path("{sample}/qc/bowtie2/{sample}.bowtie2_paired_stats.txt"),
         flag = get_processing_path("{sample}/alignment_paired_complete.flag")
     params:
+        split_complete = lambda wc: get_processing_path(f"{wc.sample}/split_interleaved_complete.flag") if SAMPLES_DF.loc[wc.sample, 'read_type'] == 'interleaved' else "",
         genome_index = config["processing_genome_index"],  # Use the copied genome index
         # Read group parameters
         rg_id = lambda wildcards: wildcards.sample,
