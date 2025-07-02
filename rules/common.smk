@@ -197,3 +197,8 @@ def get_featurecounts_flag(run_tag):
 def get_markduplicates_flag(run_tag):
     """Get the mark duplicates flag for a run tag"""
     return get_processing_path(f"{run_tag}/markduplicates_complete.flag")
+    
+    
+def get_sample_cleanup_flag(run_tag):
+    """Get the per-sample cleanup flag for a run tag"""
+    return get_results_path(f"{run_tag}/sample_cleanup_complete.txt")

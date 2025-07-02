@@ -11,7 +11,7 @@ rule split_interleaved:
     log:
         get_processing_path("{sample}/logs/split_interleaved.log")
     params:
-        script   = "split_interleaved.sh",
+        script   = "rules/fastp/split_interleaved.sh",
         prefix   = get_processing_path("{sample}/{sample}")
     shell:
         """

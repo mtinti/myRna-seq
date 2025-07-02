@@ -35,8 +35,6 @@ rule align_paired_end:
         sample = "|".join([re.escape(s) for s in PAIRED_LOCAL_SAMPLES + PAIRED_FTP_SAMPLES + [s for s in SAMPLES if SAMPLES_DF.loc[s, 'read_type'] == 'interleaved']])
     input:
         unpack(get_align_input)
-    params:
-        split_complete = lambda wc: get_processing_path(f"{wc.sample}/split_interleaved_complete.flag") if SAMPLES_DF.loc[wc.sample, 'read_type'] == 'interleaved' else ""
     output:
         bam = get_processing_path("{sample}/{sample}.bam"),
         bai = get_processing_path("{sample}/{sample}.bam.bai"),

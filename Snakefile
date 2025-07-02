@@ -206,24 +206,24 @@ include: "rules/processing/mark_duplicates.smk"
 # QC rules
 include: "rules/qc/bam_qc.smk"
 
-if any(is_paired_end(run_tag) or SAMPLES_DF.loc[run_tag, 'read_type'] == 'interleaved' for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
+if any(is_paired_end(run_tag) or is_interleaved(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
     include: "rules/qc/paired_rnaseq.smk"
 
-if any(is_single_end(run_tag) and SAMPLES_DF.loc[run_tag, 'read_type'] != 'interleaved' for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
+if any(is_single_end(run_tag) and ~is_interleaved(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
     include: "rules/qc/single_rnaseq.smk"
 
 # Coverage track generation rules
-if any(is_paired_end(run_tag) or SAMPLES_DF.loc[run_tag, 'read_type'] == 'interleaved' for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
+if any(is_paired_end(run_tag) or is_interleaved(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
     include: "rules/coverage/paired_coverage.smk"
 
-if any(is_single_end(run_tag) and SAMPLES_DF.loc[run_tag, 'read_type'] != 'interleaved' for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
+if any(is_single_end(run_tag) and ~is_interleaved(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
     include: "rules/coverage/single_coverage.smk"
 
 # Feature counting rules
-if any(is_paired_end(run_tag) or SAMPLES_DF.loc[run_tag, 'read_type'] == 'interleaved' for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
+if any(is_paired_end(run_tag) or is_interleaved(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
     include: "rules/counting/paired_counts.smk"
 
-if any(is_single_end(run_tag) and SAMPLES_DF.loc[run_tag, 'read_type'] != 'interleaved' for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
+if any(is_single_end(run_tag) and ~is_interleaved(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
     include: "rules/counting/single_counts.smk"
 
 # Benchmarking rules
@@ -232,37 +232,15 @@ include: "rules/benchmarks.smk"
 # Results handling rules
 include: "rules/results.smk"
 
-# Define final target rule
+# Define target files outside the rule
+FINAL_RESULTS = get_results_path("copy_complete_all.txt") if EFFECTIVE_SAMPLES_TO_PROCESS else []
+SAMPLE_CLEANUPS = expand(get_results_path("{run_tag}/sample_cleanup_complete.txt"), run_tag=EFFECTIVE_SAMPLES_TO_PROCESS) if EFFECTIVE_SAMPLES_TO_PROCESS else []
+
 rule all:
     input:
-        # First process all original samples through alignment
-        acquisition_flags = [get_acquisition_flag(sample) for sample in SAMPLES],
-        checksum_flags = [get_checksum_flag(sample) for sample in SAMPLES],
-        fastp_flags = [get_fastp_flag(sample) for sample in SAMPLES],
-        # Files generated from the interleaved splitting step
-        split_fastqs = [
-            get_processing_path(f"{sample}/{sample}.{i}.fastq.gz")
-            for sample in SAMPLES
-            if SAMPLES_DF.loc[sample, 'read_type'] == 'interleaved'
-            for i in [1, 2]
-        ],
-        split_flags = [
-            get_processing_path(f"{sample}/split_interleaved_complete.flag")
-            for sample in SAMPLES
-            if SAMPLES_DF.loc[sample, 'read_type'] == 'interleaved'
-        ],
-        alignment_flags = [get_alignment_flag(sample) for sample in SAMPLES],
-        
-        # Then merge and process all effective samples (run tags or standalone samples)
-        merge_flags = [get_merge_flag(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS],
-        markduplicates_flags = [get_markduplicates_flag(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS],
-        qc_flags = [get_qc_flag(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS],
-        coverage_flags = [get_coverage_flag(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS],
-        featurecounts_flags = [get_featurecounts_flag(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS],
-        
-        # Final results flags
-        results_complete = get_results_path("copy_complete_all.txt") if EFFECTIVE_SAMPLES_TO_PROCESS else [],
-        cleanup_complete = get_results_path("cleanup_complete.txt") if config.get("cleanup_processing", False) and EFFECTIVE_SAMPLES_TO_PROCESS else []
+        # Only need to wait for results copying completion
+        # Cleanup happens as part of the copy_results rule now
+        get_results_path("copy_complete_all.txt") if EFFECTIVE_SAMPLES_TO_PROCESS else []
         
 # Define the complete workflow steps for logging
 workflow_steps = [
