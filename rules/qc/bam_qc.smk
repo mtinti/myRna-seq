@@ -12,7 +12,7 @@ rule samtools_flagstat:
     input:
         bam = get_picard_bam,
         bai = lambda wildcards: f"{get_picard_bam(wildcards)}.bai",
-        markduplicates_flag = get_processing_path("{sample}/markduplicates_complete.flag")
+        markduplicates_flag = get_markduplicates_flag
     output:
         flagstat = get_processing_path("{sample}/qc/flagstat/{sample}.flagstat.txt")
     log:
@@ -53,7 +53,7 @@ rule samtools_stats:
     input:
         bam = get_picard_bam,
         bai = lambda wildcards: f"{get_picard_bam(wildcards)}.bai",
-        markduplicates_flag = get_processing_path("{sample}/markduplicates_complete.flag")
+        markduplicates_flag = get_markduplicates_flag
     output:
         stats = get_processing_path("{sample}/qc/stats/{sample}.stats.txt")
     log:
@@ -94,7 +94,7 @@ rule qualimap_bamqc:
     input:
         bam = get_picard_bam,
         bai = lambda wildcards: f"{get_picard_bam(wildcards)}.bai",
-        markduplicates_flag = get_processing_path("{sample}/markduplicates_complete.flag")
+        markduplicates_flag = get_markduplicates_flag
     output:
         dir = directory(get_processing_path("{sample}/qc/{sample}_qualimap_bam/")),
         flag = get_processing_path("{sample}/bamqc_complete.flag")
