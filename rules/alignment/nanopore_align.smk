@@ -50,11 +50,11 @@ rule align_nanopore:
         echo "Aligning nanopore reads for {wildcards.sample}" > {log}
         echo "Input FASTQ: {input.r}" >> {log}
         echo "Using preset: {params.preset}" >> {log}
-        echo "Genome index base: {params.genome_index}" >> {log}
+        echo "Genome FASTA: {params.genome_index}.fa" >> {log}
 
         minimap2 -ax {params.preset} -t {threads} \
             -R '@RG\tID:{params.rg_id}\tSM:{params.rg_sm}\tLB:{params.rg_lb}\tPU:{params.rg_pu}\tPL:{params.rg_pl}' \
-            {params.genome_index} {input.r} 2> {output.stats} | \
+            {params.genome_index}.fa {input.r} 2> {output.stats} | \
             samtools view -bSu -@ {threads} | \
             samtools sort -@ {threads} -o {output.bam} >> {log} 2>&1
 

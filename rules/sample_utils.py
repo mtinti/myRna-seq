@@ -46,8 +46,10 @@ def copy_reference_files(config):
     
     # Copy all genome index files
     # BT2 index files have extensions like .1.bt2, .2.bt2, etc.
-    index_extensions = ['.1.bt2', '.2.bt2', '.3.bt2', '.4.bt2', '.rev.1.bt2', '.rev.2.bt2',
-                        '.1.bt2l', '.2.bt2l', '.3.bt2l', '.4.bt2l', '.rev.1.bt2l', '.rev.2.bt2l']
+    index_extensions = [
+        '.1.bt2', '.2.bt2', '.3.bt2', '.4.bt2', '.rev.1.bt2', '.rev.2.bt2',
+        '.1.bt2l', '.2.bt2l', '.3.bt2l', '.4.bt2l', '.rev.1.bt2l', '.rev.2.bt2l'
+    ]
     
     for ext in index_extensions:
         src_file = src_genome_index_base + ext
@@ -59,6 +61,16 @@ def copy_reference_files(config):
                 shutil.copy2(src_file, target_file)
             except Exception as e:
                 print(f"Warning: Failed to copy genome index file {src_file}: {e}")
+
+    # Copy reference FASTA file for tools like minimap2
+    src_fasta = src_genome_index_base + '.fa'
+    target_fasta = target_genome_base + '.fa'
+    if os.path.exists(src_fasta) and not os.path.exists(target_fasta):
+        print(f"Copying FASTA file from {src_fasta} to {target_fasta}")
+        try:
+            shutil.copy2(src_fasta, target_fasta)
+        except Exception as e:
+            print(f"Warning: Failed to copy FASTA file {src_fasta}: {e}")
 
 def create_sample_directories(config, sample_name):
     """Create the necessary directory structure for a specific sample"""
