@@ -6,6 +6,10 @@ Includes:
 - qualimap bamqc
 """
 import os
+import re
+
+# List of samples that are not nanopore
+NON_NANOPORE_SAMPLES = [s for s in SAMPLES if not is_nanopore(s)]
 
 # Rule for running samtools flagstat
 rule samtools_flagstat:
@@ -91,6 +95,8 @@ rule samtools_stats:
 
 # Rule for running qualimap bamqc
 rule qualimap_bamqc:
+    wildcard_constraints:
+        sample = "|".join([re.escape(s) for s in NON_NANOPORE_SAMPLES]) if NON_NANOPORE_SAMPLES else "^$"
     input:
         bam = get_picard_bam,
         bai = lambda wildcards: f"{get_picard_bam(wildcards)}.bai",
