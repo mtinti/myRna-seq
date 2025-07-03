@@ -10,14 +10,14 @@ import re
 def is_valid_single_run_tag(run_tag):
     # For standard samples that are their own run tag
     if run_tag in SAMPLES_DF.index and run_tag not in RUN_TAGS:
-        return is_single_end(run_tag)
+        return is_single_end(run_tag) or is_nanopore(run_tag)
         
     # For actual run tags that group multiple samples
     if run_tag in RUN_TAG_SAMPLES:
         samples = RUN_TAG_SAMPLES[run_tag]
         if samples:
             # Check the first sample in the group to determine type
-            return is_single_end(samples[0])
+            return is_single_end(samples[0]) or is_nanopore(samples[0])
     
     # Default case - assume it's not valid for this rule
     return False

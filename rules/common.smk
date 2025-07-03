@@ -84,6 +84,12 @@ def is_single_end(sample_or_run_tag):
         return get_run_tag_read_type(sample_or_run_tag) == 'single'
     return get_read_type(sample_or_run_tag) == 'single'
 
+def is_nanopore(sample_or_run_tag):
+    """Check if sample or run tag is nanopore"""
+    if is_run_tag(sample_or_run_tag):
+        return get_run_tag_read_type(sample_or_run_tag) == 'nanopore'
+    return get_read_type(sample_or_run_tag) == 'nanopore'
+
 def is_local_source(sample):
     """Check if sample source is local"""
     return get_source_type(sample) == 'local'
@@ -105,6 +111,11 @@ def get_fastq_r2(wildcards):
 
 def get_fastq_single(wildcards):
     """Get the fastq file for a single-end sample"""
+    sample = wildcards.sample
+    return get_processing_path(f"{sample}/{sample}.fastq.gz")
+
+def get_nanopore_fastq(wildcards):
+    """Get the fastq file for a nanopore sample"""
     sample = wildcards.sample
     return get_processing_path(f"{sample}/{sample}.fastq.gz")
 
@@ -138,6 +149,10 @@ def get_aligned_bam(wildcards):
 def get_picard_bam(wildcards):
     """Get the BAM file after processing with Picard MarkDuplicates"""
     run_tag = wildcards.run_tag if hasattr(wildcards, 'run_tag') else wildcards.sample
+
+    if is_nanopore(run_tag):
+        # Nanopore samples skip mark duplicates
+        return get_processing_path(f"merged/{run_tag}/{run_tag}.bam")
     return get_processing_path(f"{run_tag}/{run_tag}.picard.bam")
 
 # Helper functions for flag file paths with specific types
@@ -157,7 +172,10 @@ def get_checksum_flag(sample):
 
 def get_fastp_flag(sample):
     """Get the appropriate fastp flag based on sample type"""
-    if is_paired_end(sample) or is_interleaved(sample):
+    if is_nanopore(sample):
+        # For nanopore samples, use checksum flag instead
+        return get_checksum_flag(sample)
+    elif is_paired_end(sample) or is_interleaved(sample):
         return get_processing_path(f"{sample}/fastp_paired_complete.flag")
     else:
         return get_processing_path(f"{sample}/fastp_single_complete.flag")
@@ -175,7 +193,9 @@ def get_merge_flag(run_tag):
 
 def get_qc_flag(run_tag):
     """Get the appropriate QC flag based on run tag type"""
-    if is_paired_end(run_tag) or is_interleaved(run_tag):
+    if is_nanopore(run_tag):
+        return get_processing_path(f"{run_tag}/bamqc_complete.flag")
+    elif is_paired_end(run_tag) or is_interleaved(run_tag):
         return get_processing_path(f"{run_tag}/qc_paired_complete.flag")
     else:
         return get_processing_path(f"{run_tag}/qc_single_complete.flag")
@@ -196,6 +216,8 @@ def get_featurecounts_flag(run_tag):
 
 def get_markduplicates_flag(run_tag):
     """Get the mark duplicates flag for a run tag"""
+    if is_nanopore(run_tag):
+        return get_merge_flag(run_tag)
     return get_processing_path(f"{run_tag}/markduplicates_complete.flag")
     
     
