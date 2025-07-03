@@ -194,7 +194,8 @@ def get_merge_flag(run_tag):
 def get_qc_flag(run_tag):
     """Get the appropriate QC flag based on run tag type"""
     if is_nanopore(run_tag):
-        return get_processing_path(f"{run_tag}/bamqc_complete.flag")
+        # Nanopore samples skip Qualimap QC, so rely on the merge step instead
+        return get_merge_flag(run_tag)
     elif is_paired_end(run_tag) or is_interleaved(run_tag):
         return get_processing_path(f"{run_tag}/qc_paired_complete.flag")
     else:
