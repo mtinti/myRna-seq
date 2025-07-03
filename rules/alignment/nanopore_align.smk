@@ -52,7 +52,7 @@ rule align_nanopore:
         echo "Using preset: {params.preset}" >> {log}
         echo "Genome FASTA: {params.genome_index}.fa" >> {log}
 
-        minimap2 -ax {params.preset} -t {threads} -N 1 \
+        minimap2 -ax splice -uf -k14 -G 10000 -t 24 -t {threads} \
             {params.genome_index}.fa {input.r} 2> {output.stats} | \
             samtools view -bSu -@ {threads} | \
             samtools sort -@ {threads} -o {output.bam} >> {log} 2>&1
