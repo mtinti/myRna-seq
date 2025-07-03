@@ -214,8 +214,13 @@ def get_featurecounts_flag(run_tag):
     else:
         return get_processing_path(f"{run_tag}/featurecounts_single_complete.flag")
 
-def get_markduplicates_flag(run_tag):
-    """Get the mark duplicates flag for a run tag"""
+def get_markduplicates_flag(wildcards):
+    """Get the mark duplicates flag for a run tag or sample."""
+    if isinstance(wildcards, dict):
+        run_tag = wildcards.get("run_tag") or wildcards.get("sample")
+    else:
+        run_tag = getattr(wildcards, "run_tag", getattr(wildcards, "sample", wildcards))
+
     if is_nanopore(run_tag):
         return get_merge_flag(run_tag)
     return get_processing_path(f"{run_tag}/markduplicates_complete.flag")
