@@ -1,297 +1,341 @@
-# 🧬 RNA-seq Processing Pipeline
+# RNA-seq Snakemake Pipeline
 
-A flexible and modular Snakemake workflow for processing RNA-seq data from trypanosomatids, supporting both paired-end and single-end reads from local and FTP sources.
+A comprehensive RNA-seq analysis pipeline built with Snakemake that supports multiple data types including paired-end, single-end, interleaved, and nanopore sequencing data.
 
-## 📋 Overview
+## Features
 
+- **Multi-format support**: Paired-end, single-end, interleaved, and nanopore data
+- **Flexible input sources**: Local files and FTP downloads
+- **Quality control**: Comprehensive QC with fastp, samtools, and Qualimap
+- **Run tag grouping**: Combine multiple samples for joint analysis
+- **Checksum verification**: Ensure data integrity
+- **Containerized**: Singularity support
+- **Benchmarking**: Detailed performance metrics
+- **Modular design**: Rules are automatically included based on your data
 
-This pipeline was specifically designed for analysis of trypanosomatid RNA-seq data (such as *Trypanosoma brucei*, *Leishmania* spp. and related organisms). The unique genomic features of these organisms—including their intron-less genes and highly repetitive genomic regions—have driven tool selection and parameter optimization throughout the workflow.
-
-Currently implemented in our laboratory for RNA-seq data processing prior to differential expression analysis, this pipeline handles the critical steps from raw data to quantified gene expression with parameters optimized for trypanosomatid data.
-
-The workflow includes:
-
-- 📥 **Acquisition**: Downloads or copies data from FTP or local sources
-- ✓ **Validation**: Verifies file integrity with MD5 checksums
-- 🧹 **Quality Control**: Filters low-quality reads with fastp
-- 🔍 **Alignment**: Maps reads to a reference genome with Bowtie2
-- 🔄 **Deduplication**: Marks or removes duplicates with Picard
-- 📊 **Analysis**: Generates coverage tracks, counts reads in features
-- 📈 **QC Reports**: Produces comprehensive quality metrics
-- 🗃️ **Results**: Organizes outputs in a clean directory structure
-
-## 🧪 Design Considerations for Trypanosomatid Data
-
-The pipeline incorporates several specific optimizations for working with trypanosomatid genomic data:
-
-1. **Intron-less Gene Handling**: Since trypanosomatids generally lack introns, the feature counting parameters are optimized for CDS-based quantification rather than spliced transcript analysis. This approach also addresses the typically poor annotation of UTRs in these organisms.
-
-2. **Repetitive Region Management**: The pipeline provides both all-mapped and uniquely-mapped read quantification to help address the challenges of repetitive genes common in trypanosomatid genomes.
-
-These specialized optimizations make this pipeline particularly effective for research on *T. brucei*, *T. cruzi*, *Leishmania* species, and other kinetoplastids, while still maintaining flexibility for use with other data types.
-
-## 🔧 Pipeline Architecture
+## Pipeline Architecture
 
 ```
-Input Data (Local/FTP)
-      ↓
-    QC FASTQ
-      ↓
-   Alignment
-      ↓
-Mark Duplicates
-      ↓    
-      ├─────┬─────┐
-      ↓     ↓     ↓
-Coverage  QC BAM  Feature Counting
-      ↓     ↓     ↓
-      └─────┴─────┘
-      ↓
-  Final Results
+Input Data (4 types)
+    ↓
+Acquisition & Checksum Verification
+    ↓
+Quality Filtering* (fastp)
+    ↓
+Alignment (bowtie2/minimap2)
+    ↓
+BAM Merging by Run Tag
+    ↓
+Mark Duplicates* (Picard)
+    ↓
+Quality Control (samtools + Qualimap*)
+    ↓
+Coverage Tracks (bamCoverage)
+    ↓
+Feature Counting (featureCounts)
+    ↓
+Results & Cleanup
+
+* Step skipped for nanopore data
 ```
 
+### Data Type Processing:
+- **Paired/Single/Interleaved**: Full pipeline with bowtie2
+- **Nanopore**: Direct minimap2 alignment, skips QC/duplicate steps
 
+## Supported Data Types
 
-## ⚙️ Installation
+### 1. Paired-end Illumina Data
+- **read_type**: `paired`
+- **Description**: Standard paired-end sequencing with separate R1 and R2 files
+- **Required fields**: `file_path_1` (R1), `file_path_2` (R2)
+- **Processing**: Quality filtering with fastp → Alignment with bowtie2 → Standard QC
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/username/rnaseq-pipeline.git
-   cd rnaseq-pipeline
-   ```
+### 2. Single-end Illumina Data
+- **read_type**: `single`
+- **Description**: Single-end sequencing with one file per sample
+- **Required fields**: `file_path_1` only
+- **Processing**: Quality filtering with fastp → Alignment with bowtie2 → Standard QC
 
-2. Create a conda environment:
-   ```bash
-   conda env create -f environment.yaml
-   conda activate rnaseq
-   ```
+### 3. Interleaved Paired-end Data
+- **read_type**: `interleaved`
+- **Description**: Paired-end data stored in a single file with alternating R1/R2 reads
+- **Required fields**: `file_path_1` (interleaved file)
+- **Processing**: File splitting → Quality filtering with fastp → Alignment with bowtie2 → Standard QC
+- **Note**: The pipeline automatically splits interleaved files into separate R1/R2 files before processing
 
-3. Container support:
-   
-   The pipeline can be run with Singularity for improved reproducibility and dependency management.
-   
-   **Using the pre-built Docker image**
-   
-   A Docker image is available at Docker Hub: `mtinti/rna_seq`
-   
-   To convert the Docker image to a Singularity SIF file:
-   
-   ```bash
-   # Pull from Docker Hub and create a SIF file
-   singularity pull docker://mtinti/rna_seq
-   
-   # Or with a specific version
-   singularity pull docker://mtinti/rna_seq:latest
-   
-   # You can also build with more options
-   singularity build --sandbox rna_seq/ docker://mtinti/rna_seq
-   singularity build rna_seq.sif rna_seq/
-   ```
-   
-   The resulting SIF file can be used with the pipeline by setting `singularity_image` in the config file or at runtime.
+### 4. Nanopore Long-read Data
+- **read_type**: `nanopore`
+- **Description**: Oxford Nanopore long-read sequencing data
+- **Required fields**: `file_path_1` only
+- **Processing**: Direct alignment with minimap2 → Coverage analysis (skips quality filtering and duplicate marking)
+- **Special considerations**:
+  - Uses minimap2 with splice-aware alignment (`-ax splice`)
+  - Skips fastp quality filtering (nanopore reads handled differently)
+  - Skips Picard MarkDuplicates (not applicable to long reads)
+  - Skips Qualimap RNA-seq QC (optimized for short reads)
 
-## 🚀 Usage
+## Quick Start
 
-### Basic Usage
-
-Run the pipeline with default settings:
+### 1. Installation
 
 ```bash
-snakemake --cores 8 --use-conda
+# Clone the repository
+git clone <repository-url>
+cd rna-seq-pipeline
+
+# Install Snakemake (if not already installed)
+conda install -c conda-forge -c bioconda snakemake
 ```
 
+### 2. Prepare your sample sheet
 
-## MultiQC Report Generation
-
-After running the RNA-seq pipeline, you can generate comprehensive MultiQC reports to visualize quality metrics across all samples.
-
-### Running the MultiQC Module
-
-The pipeline includes a standalone MultiQC module that can be run separately after pipeline completion:
-
-```bash
-snakemake -s myMultiQC.smk --use-singularity \
-  --config results_dir=/path/to/results/exp/ \
-          singularity_image=/path/to/rna_seq.sif
-```
-
-### Output
-The module automatically identifies sample types (paired-end or single-end) from your sample information file and generates the appropriate reports:
-
-> When both paired-end and single-end samples are present:
-
-results/exp/MultiQC/multiqc_paired_report.html
-results/exp/MultiQC/multiqc_single_report.html
-
-
-> When only one type is present:
-
-results/iRNA/MultiQC/multiqc_report.html
-
-
-
-## Using the Singularity Container
-
-To simplify dependency management, we provide a Singularity container with all required dependencies pre-installed.
-
-### Creating the Singularity Image
-
-You can create the Singularity image file (`.sif`) directly from Docker Hub:
-
-```bash
-# Make sure Singularity/Apptainer is installed on your system
-singularity pull rna_seq.sif docker://mtinti/rna_seq:latest
-```
-
-
-### Running the main pipeline
-```bash
-snakemake --use-singularity \
-  --config singularity_image=/path/to/rna_seq.sif \
-  --cores 8
-```
-
-### Advanced Usage
-
-Run with custom parameters:
-
-```bash
-snakemake --cores 8 --use-conda \
-  --config processing_dir=/path/to/processing \
-  results_dir=/path/to/results \
-  samples_csv=/path/to/samples.csv
-```
-
-Run with Singularity:
-
-```bash
-# Using a local SIF file
-snakemake --cores 8 --use-singularity \
-  --config singularity_image="/path/to/rna_seq.sif"
-```
-
-### Command Line Arguments
-
-The pipeline supports several command line arguments through Snakemake's `--config` parameter:
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `processing_dir` | Directory for intermediate files | `processing` |
-| `results_dir` | Directory for final results | `results` |
-| `samples_csv` | Sample information CSV | `samples.csv` |
-| `selected_samples` | Comma-separated list of specific samples to process | All samples |
-| `genome_index` | Path to Bowtie2 genome index | `reference/genome` |
-| `gtf_file` | Path to GTF file | `reference/genes.gtf` |
-
-Example:
-
-```bash
-snakemake --cores 8 --use-conda \
-  --config processing_dir=/scratch/user/rnaseq_work \
-           results_dir=/home/user/rnaseq_results \
-           samples_csv=project_samples.csv \
-           selected_samples=sample1,sample2,sample5
-```
-
-## 📋 Sample File Format
-
-The pipeline requires a CSV file with sample information. Example format:
+Create a `samples.csv` file with your sample information:
 
 ```csv
-sample_name,read_type,source_type,file_path_1,file_path_2,checksum_1,checksum_2
-sample1,paired,local,R1.fastq.gz,R2.fastq.gz,5f363e2a59c7,a9c8e0d1b3f5
-sample2,single,local,fastq.gz,,7d8f9e2a3b1c,
+sample_name,read_type,source_type,file_path_1,file_path_2,checksum_1,checksum_2,run_tag
+sample1,paired,local,/data/sample1_R1.fastq.gz,/data/sample1_R2.fastq.gz,abc123,def456,experiment_A
+sample2,single,ftp,ftp://server.com/sample2.fastq.gz,,xyz789,,experiment_B
+sample3,interleaved,local,/data/sample3_interleaved.fastq.gz,,mno345,,experiment_A
+sample4,nanopore,local,/data/sample4_nanopore.fastq.gz,,pqr678,,long_read_set
 ```
 
-Required columns:
-- `sample_name`: Unique sample identifier
-- `read_type`: Either `paired` or `single`
-- `source_type`: Either `local` or `ftp`
-- `file_path_1`: Path to R1 file (or the only file for single-end)
-- `file_path_2`: Path to R2 file (only for paired-end, leave empty for single-end)
-- `checksum_1`: MD5 checksum for the first file (or the only file for single-end)
-- `checksum_2`: MD5 checksum for the second file (only for paired-end, leave empty for single-end)
+### 3. Configure the pipeline
 
-Optional columns:
-- `run_tag`: Merge samples for technical replicates. The final output folder will use this name.
+Edit `config.yaml` to specify your reference genome and processing parameters:
 
-## 🔍 Output Structure
+```yaml
+# Core directories
+processing_dir: "processing"
+results_dir: "results"
 
-The pipeline organizes results in a clean directory structure:
+# Sample information
+samples_csv: "samples.csv"
+
+# Reference genome
+genome_index: "reference/genome/genome_index"
+gtf_file: "reference/genome/annotation.gtf"
+
+# Processing parameters
+cores_align: 8
+feature_type: "CDS"
+```
+
+### 4. Run the pipeline
+
+```bash
+# Dry run to check the workflow
+snakemake -n
+
+# Run the pipeline
+snakemake --cores 8
+
+# Run with Singularity container
+snakemake --cores 8 --use-singularity
+```
+
+## Testing the Pipeline
+
+You can test the pipeline with the included test dataset:
+
+```bash
+snakemake --cores 10 --use-singularity --config \
+processing_dir="tests/test_counts/new_branch/processing" \
+results_dir="tests/test_counts/new_branch/results" \
+benchmark_dir="tests/test_counts/new_branch/benchmarks" \
+genome_index="tests/test_counts/genome/random_genome" \
+gtf_file="tests/test_counts/genome/annotation.gtf" \
+samples_csv="test_samples_counts.csv"
+```
+
+Expected output from the test dataset:
+```
+Features
+---------------------------
+gene1: 10 reads total
+gene2: 8 reads total
+gene3: 2 reads total
+---------------------------
+```
+
+## Sample CSV Format
+
+Your `samples.csv` file should include these columns:
+
+| Column | Required | Description |
+|--------|----------|-------------|
+| `sample_name` | Yes | Unique identifier for each sample |
+| `read_type` | Yes | One of: `paired`, `single`, `interleaved`, `nanopore` |
+| `source_type` | Yes | Either `local` or `ftp` |
+| `file_path_1` | Yes | Path to first/only FASTQ file |
+| `file_path_2` | Conditional | Path to second FASTQ file (required for `paired` only) |
+| `checksum_1` | Optional | MD5 checksum for file_path_1 |
+| `checksum_2` | Optional | MD5 checksum for file_path_2 |
+| `run_tag` | Optional | Group samples for combined analysis |
+
+### Example CSV entries:
+
+```csv
+sample_name,read_type,source_type,file_path_1,file_path_2,checksum_1,checksum_2,run_tag
+illumina_pe_01,paired,local,/data/sample1_R1.fastq.gz,/data/sample1_R2.fastq.gz,abc123,def456,experiment_A
+illumina_se_01,single,ftp,ftp://server.com/sample2.fastq.gz,,xyz789,,experiment_B
+interleaved_01,interleaved,local,/data/sample3_interleaved.fastq.gz,,mno345,,experiment_A
+nanopore_01,nanopore,local,/data/sample4_nanopore.fastq.gz,,pqr678,,long_read_set
+```
+
+## Processing Differences by Data Type
+
+### Quality Control Steps
+
+| Step | Paired/Single | Interleaved | Nanopore |
+|------|---------------|-------------|----------|
+| File splitting | No | ✅ Yes | No |
+| fastp filtering | ✅ Yes | ✅ Yes | ❌ No |
+| Alignment tool | bowtie2 | bowtie2 | minimap2 |
+| Mark duplicates | ✅ Yes | ✅ Yes | ❌ No |
+| Qualimap BAM QC | ✅ Yes | ✅ Yes | ❌ No |
+| Qualimap RNA-seq QC | ✅ Yes | ✅ Yes | ❌ No |
+
+### Alignment Parameters
+
+**Illumina data (paired/single/interleaved):**
+- Tool: bowtie2
+- Options: `--very-sensitive-local`
+- Read groups: Automatically added for Picard compatibility
+
+**Nanopore data:**
+- Tool: minimap2
+- Preset: `map-ont` (configurable via `nanopore_preset`)
+- Options: `-ax splice -uf -k14 -G 10000` (splice-aware alignment)
+- Read groups: Platform set to "ONT"
+
+## Configuration
+
+### Core Configuration (`config.yaml`)
+
+```yaml
+# Core directories
+processing_dir: "processing"
+results_dir: "results"
+
+# Sample information
+samples_csv: "samples.csv"
+selected_samples: []  # Empty list means all samples are processed
+
+# Reference genome
+genome_index: "reference/genome/genome_index"
+gtf_file: "reference/genome/annotation.gtf"
+
+# Processing parameters
+cores_align: 8
+cores_coverage: 8
+cores_featurecounts: 8
+cores_fastp: 8
+cores_default: 1
+feature_type: "CDS"
+
+# Nanopore-specific settings
+nanopore_preset: "map-ont"        # Minimap2 preset
+cores_nanopore_align: 8           # CPU cores for nanopore alignment
+mem_nanopore_align: 16000         # Memory for nanopore alignment (MB)
+
+# Mark Duplicates parameters
+remove_duplicates: false  # Set to true to remove duplicates, false to only mark
+
+# QC parameters
+qualimap_memory: "10G"
+
+# Coverage track parameters
+coverage_bin_size: 10
+coverage_normalize: "RPKM"
+min_mapping_quality: 2
+
+# File handling preferences
+copy_fastq: false        # Whether to copy FASTQ files to results
+copy_bam: false          # Whether to copy BAM files to results
+copy_benchmarks: true    # Whether to copy benchmark files
+copy_logs: true          # Whether to copy log files
+cleanup_processing: false  # Whether to remove processing directory after completion
+
+# Container support
+singularity_image: "/path/to/container.sif"
+```
+
+### Resource Configuration
+
+```yaml
+# Resource limits
+max_resources:
+  network: 3    # Maximum concurrent FTP downloads
+  io: 1000      # Maximum concurrent IO operations
+```
+
+## Output Structure
 
 ```
 results/
-├── sample1/
-│   ├── sample1_all.bw                     # Coverage track (all reads)
-│   ├── sample1_unique.bw                  # Coverage track (unique reads)
-│   ├── sample1_counts_paired_all.txt      # Read counts (all reads)
-│   ├── sample1_counts_paired_unique.txt   # Read counts (unique reads)
-│   ├── merged_benchmarks.txt              # Performance metrics
-│   ├── qc/
-│   │   ├── flagstat/                      # Alignment statistics
-│   │   ├── stats/                         # Detailed BAM statistics
-│   │   ├── sample1_qualimap_bam/          # BAM quality metrics
-│   │   ├── sample1_qualimap_rnaseq/       # RNA-seq specific metrics
-│   │   ├── fastp/                         # Read quality reports
-│   │   ├── bowtie2/                       # Alignment reports
-│   │   ├── markduplicates/                # Duplication metrics
-│   │   └── feature_counts/                # Counting summaries
-│   └── [optional: BAM files, logs, etc.]
-├── sample2/
-│   └── ...
-└── copy_complete_all.txt                  # Processing completion flag
+├── {sample_or_run_tag}/
+│   ├── {sample}_all.bw                    # Coverage track (all reads)
+│   ├── {sample}_unique.bw                 # Coverage track (unique reads)
+│   ├── {sample}_counts_*_all.txt          # Feature counts (all reads)
+│   ├── {sample}_counts_*_unique.txt       # Feature counts (unique reads)
+│   ├── qc/                                # Quality control reports
+│   │   ├── fastp/                         # fastp reports (if applicable)
+│   │   ├── flagstat/                      # samtools flagstat
+│   │   ├── stats/                         # samtools stats
+│   │   ├── {sample}_qualimap_bam/         # Qualimap BAM QC
+│   │   ├── {sample}_qualimap_rnaseq/      # Qualimap RNA-seq QC (if applicable)
+│   │   ├── markduplicates/                # Picard metrics (if applicable)
+│   │   └── feature_counts/                # featureCounts summaries
+│   ├── benchmarks/                        # Performance benchmarks (optional)
+│   └── logs/                              # Log files (optional)
+├── benchmarks_project_summary.txt         # Project-wide benchmark summary
+└── copy_complete_all.txt                  # Pipeline completion marker
 ```
 
-## 🛠 Configuration
+## Run Tags and Sample Grouping
 
-Edit `config.yaml` to customize pipeline behavior:
+The `run_tag` column allows you to group samples for combined analysis:
 
-```yaml
-# Core settings
-processing_dir: "processing"           # Intermediate files location
-results_dir: "results"                 # Final output location
-samples_csv: "samples.csv"             # Sample information
-
-# Resources
-cores_align: 8                         # Cores for alignment
-cores_coverage: 8                      # Cores for coverage generation
-cores_featurecounts: 8                 # Cores for counting
-max_cores: 8                           # Maximum cores to use
-
-# Parameters
-feature_type: "CDS"                    # Feature type for counting (CDS recommended for trypanosomatids)
-remove_duplicates: false               # Mark or remove duplicates
-coverage_normalize: "RPKM"             # Coverage normalization method
-min_mapping_quality: 2                 # Min quality for unique reads
-
-# Trypanosomatid-specific settings
-# For repetitive genes, use both 'all' and 'unique' counting approaches
-
-# Output control
-copy_bam: false                        # Copy BAM files to results
-copy_benchmarks: true                  # Copy benchmark files
-copy_logs: true                        # Copy log files
-cleanup_processing: false              # Remove processing files after completion
+```csv
+sample_name,read_type,source_type,file_path_1,run_tag
+sample_A1,paired,local,/data/A1_R1.fastq.gz,experiment_1
+sample_A2,paired,local,/data/A2_R1.fastq.gz,experiment_1
+sample_B1,nanopore,local,/data/B1.fastq.gz,long_reads
 ```
 
-## 🧪 Testing
+**Important notes:**
+- All samples within a run tag group must have the same `read_type`
+- BAM files are merged by run tag before downstream analysis
+- Final outputs use the run tag name, not individual sample names
+- If no `run_tag` is specified, each sample is processed independently
 
-Run a test with the included test data:
+## Advanced Usage
+
+### Running Specific Samples
 
 ```bash
-snakemake --cores 2 --use-conda -p --configfile test_config.yaml
+# Process only specific samples
+snakemake --cores 8 --config selected_samples="['sample1','sample2']"
 ```
 
+### Container Usage
 
+```bash
+# With Singularity
+snakemake --cores 8 --use-singularity
+```
 
-## 🙏 Acknowledgments
+### Resource Management
 
-This pipeline uses several excellent open-source tools:
-- [Snakemake](https://snakemake.github.io)
-- [fastp](https://github.com/OpenGene/fastp)
-- [Bowtie2](http://bowtie-bio.sourceforge.net/bowtie2)
-- [Samtools](http://www.htslib.org)
-- [Picard](https://broadinstitute.github.io/picard)
-- [Qualimap](http://qualimap.conesalab.org)
-- [deepTools](https://deeptools.readthedocs.io)
-- [Subread/featureCounts](http://subread.sourceforge.net)
+```bash
+# Limit concurrent FTP downloads
+snakemake --cores 8 --resources network=2
+```
+
+### Resource Management
+
+```bash
+# Limit concurrent FTP downloads
+snakemake --cores 8 --resources network=2
+```
