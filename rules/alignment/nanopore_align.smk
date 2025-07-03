@@ -53,7 +53,6 @@ rule align_nanopore:
         echo "Genome FASTA: {params.genome_index}.fa" >> {log}
 
         minimap2 -ax {params.preset} -t {threads} \
-            -R '@RG\tID:{params.rg_id}\tSM:{params.rg_sm}\tLB:{params.rg_lb}\tPU:{params.rg_pu}\tPL:{params.rg_pl}' \
             {params.genome_index}.fa {input.r} 2> {output.stats} | \
             samtools view -bSu -@ {threads} | \
             samtools sort -@ {threads} -o {output.bam} >> {log} 2>&1
