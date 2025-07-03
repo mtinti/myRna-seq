@@ -32,7 +32,7 @@ rule generate_all_reads_coverage_single:
     input:
         bam = get_picard_bam,
         bai = lambda wildcards: f"{get_picard_bam(wildcards)}.bai",
-        qc_complete = get_processing_path("{run_tag}/qc_single_complete.flag")
+        qc_complete = lambda wildcards: get_qc_flag(wildcards.run_tag)
     output:
         bigwig = get_processing_path("{run_tag}/{run_tag}_all.bw")
     log:
@@ -86,7 +86,7 @@ rule generate_unique_reads_coverage_single:
     input:
         bam = get_picard_bam,
         bai = lambda wildcards: f"{get_picard_bam(wildcards)}.bai",
-        qc_complete = get_processing_path("{run_tag}/qc_single_complete.flag"),
+        qc_complete = lambda wildcards: get_qc_flag(wildcards.run_tag),
         all_bigwig = get_processing_path("{run_tag}/{run_tag}_all.bw") 
     output:
         bigwig = get_processing_path("{run_tag}/{run_tag}_unique.bw"),
