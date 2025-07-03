@@ -8,7 +8,9 @@ import re
 
 rule copy_local_single_file:
     wildcard_constraints:
-        sample = "|".join([re.escape(s) for s in SINGLE_LOCAL_SAMPLES])
+        sample = "|".join([
+            re.escape(s) for s in SINGLE_LOCAL_SAMPLES + NANOPORE_LOCAL_SAMPLES
+        ])
     output:
         r = get_processing_path("{sample}/{sample}.fastq.gz"),
         flag = get_processing_path("{sample}/acquisition_single_complete.flag")
