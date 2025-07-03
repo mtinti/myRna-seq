@@ -24,6 +24,11 @@ cores_default: 1
 max_cores: 8
 feature_type: "CDS"
 
+# Nanopore-specific settings
+nanopore_preset: "map-ont"        # Minimap2 preset for nanopore
+cores_nanopore_align: 8           # Cores for nanopore alignment
+mem_nanopore_align: 16000         # Memory for nanopore alignment (MB)
+
 # Mark Duplicates parameters
 remove_duplicates: False  # Set to true to remove duplicates, false to only mark them
 

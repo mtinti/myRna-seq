@@ -142,7 +142,7 @@ def load_samples(config):
             raise ValueError(error_msg)        
         
         # Validate read_type values
-        valid_read_types = ['single', 'paired', 'interleaved']
+        valid_read_types = ['single', 'paired', 'interleaved', 'nanopore']
         invalid_read_types = samples_df[~samples_df['read_type'].isin(valid_read_types)]['read_type'].unique()
         
         if len(invalid_read_types) > 0:
@@ -163,7 +163,7 @@ def load_samples(config):
                 if pd.isna(row.get('file_path_1', None)) or pd.isna(row.get('file_path_2', None)):
                     print(f"Error: Missing file_path_1 or file_path_2 for paired-end sample {row['sample_name']}")
                     raise ValueError(f"Missing file_path_1 or file_path_2 for paired-end sample {row['sample_name']}")
-            else:  # single-end or interleaved
+            else:  # single-end, interleaved, or nanopore
                 if pd.isna(row.get('file_path_1', None)):
                     print(f"Error: Missing file_path_1 for {row['read_type']} sample {row['sample_name']}")
                     raise ValueError(f"Missing file_path_1 for {row['read_type']} sample {row['sample_name']}")
