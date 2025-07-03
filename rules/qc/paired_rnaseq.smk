@@ -9,18 +9,18 @@ rule qualimap_rnaseq_paired:
     input:
         bam = get_picard_bam,
         bai = lambda wildcards: f"{get_picard_bam(wildcards)}.bai",
-        bamqc_flag = get_processing_path("{sample}/bamqc_complete.flag")
+        bamqc_flag = get_processing_path("{run_tag}/bamqc_complete.flag")
     output:
-        dir = directory(get_processing_path("{sample}/qc/{sample}_qualimap_rnaseq/")),
-        flag = get_processing_path("{sample}/qc_paired_complete.flag")
+        dir = directory(get_processing_path("{run_tag}/qc/{run_tag}_qualimap_rnaseq/")),
+        flag = get_processing_path("{run_tag}/qc_paired_complete.flag")
     params:
         memory = config.get("qualimap_memory", "10G"),
         gtf = config["processing_gtf_file"]
     log:
-        stderr = get_processing_path("{sample}/logs/qualimap_rnaseq.log"),
-        stdout = get_processing_path("{sample}/logs/qualimap_rnaseq.stdout.log")
+        stderr = get_processing_path("{run_tag}/logs/qualimap_rnaseq.log"),
+        stdout = get_processing_path("{run_tag}/logs/qualimap_rnaseq.stdout.log")
     benchmark:
-        get_processing_path("{sample}/benchmarks/qualimap_rnaseq.benchmark.txt")
+        get_processing_path("{run_tag}/benchmarks/qualimap_rnaseq.benchmark.txt")
     threads: 
         config["cores_default"]
     conda:
@@ -34,7 +34,7 @@ rule qualimap_rnaseq_paired:
         mkdir -p $(dirname {log.stderr})
         
         # Log start
-        echo "Running qualimap rnaseq (paired-end) on {wildcards.sample}" > {log.stderr}
+        echo "Running qualimap rnaseq (paired-end) on {wildcards.run_tag}" > {log.stderr}
         echo "Input BAM: {input.bam}" >> {log.stderr}
         echo "GTF file: {params.gtf}" >> {log.stderr}
         echo "Output directory: {output.dir}" >> {log.stderr}
@@ -62,7 +62,7 @@ rule qualimap_rnaseq_paired:
         fi
         
         # Create flag file to indicate completion
-        echo "QC processing completed for paired-end sample {wildcards.sample}" > {output.flag}
+        echo "QC processing completed for paired-end sample {wildcards.run_tag}" > {output.flag}
         echo "Timestamp: $(date)" >> {output.flag}
         echo "---------------------------------" >> {output.flag}
         echo "RNA-seq QC report: {output.dir}/qualimapReport.html" >> {output.flag}

@@ -8,8 +8,8 @@ Includes:
 import os
 import re
 
-# List of samples that are not nanopore
-NON_NANOPORE_SAMPLES = [s for s in SAMPLES if not is_nanopore(s)]
+# List of run tags that are not nanopore
+NON_NANOPORE_RUN_TAGS = [rt for rt in EFFECTIVE_SAMPLES_TO_PROCESS if not is_nanopore(rt)]
 
 # Rule for running samtools flagstat
 rule samtools_flagstat:
@@ -18,11 +18,11 @@ rule samtools_flagstat:
         bai = lambda wildcards: f"{get_picard_bam(wildcards)}.bai",
         markduplicates_flag = get_markduplicates_flag
     output:
-        flagstat = get_processing_path("{sample}/qc/flagstat/{sample}.flagstat.txt")
+        flagstat = get_processing_path("{run_tag}/qc/flagstat/{run_tag}.flagstat.txt")
     log:
-        get_processing_path("{sample}/logs/flagstat.log")
+        get_processing_path("{run_tag}/logs/flagstat.log")
     benchmark:
-        get_processing_path("{sample}/benchmarks/flagstat.benchmark.txt")
+        get_processing_path("{run_tag}/benchmarks/flagstat.benchmark.txt")
     threads: 
         config["cores_flagstat"]
     conda:
@@ -36,7 +36,7 @@ rule samtools_flagstat:
         mkdir -p $(dirname {log})
         
         # Log start
-        echo "Running samtools flagstat on {wildcards.sample}" > {log}
+        echo "Running samtools flagstat on {wildcards.run_tag}" > {log}
         echo "Input BAM: {input.bam}" >> {log}
         echo "Output: {output.flagstat}" >> {log}
         
@@ -59,11 +59,11 @@ rule samtools_stats:
         bai = lambda wildcards: f"{get_picard_bam(wildcards)}.bai",
         markduplicates_flag = get_markduplicates_flag
     output:
-        stats = get_processing_path("{sample}/qc/stats/{sample}.stats.txt")
+        stats = get_processing_path("{run_tag}/qc/stats/{run_tag}.stats.txt")
     log:
-        get_processing_path("{sample}/logs/stats.log")
+        get_processing_path("{run_tag}/logs/stats.log")
     benchmark:
-        get_processing_path("{sample}/benchmarks/stats.benchmark.txt")
+        get_processing_path("{run_tag}/benchmarks/stats.benchmark.txt")
     threads: 
         config["cores_flagstat"]
     conda:
@@ -77,7 +77,7 @@ rule samtools_stats:
         mkdir -p $(dirname {log})
         
         # Log start
-        echo "Running samtools stats on {wildcards.sample}" > {log}
+        echo "Running samtools stats on {wildcards.run_tag}" > {log}
         echo "Input BAM: {input.bam}" >> {log}
         echo "Output: {output.stats}" >> {log}
         
@@ -96,19 +96,19 @@ rule samtools_stats:
 # Rule for running qualimap bamqc
 rule qualimap_bamqc:
     wildcard_constraints:
-        sample = "|".join([re.escape(s) for s in NON_NANOPORE_SAMPLES]) if NON_NANOPORE_SAMPLES else "^$"
+        run_tag = "|".join([re.escape(rt) for rt in NON_NANOPORE_RUN_TAGS]) if NON_NANOPORE_RUN_TAGS else "^$"
     input:
         bam = get_picard_bam,
         bai = lambda wildcards: f"{get_picard_bam(wildcards)}.bai",
         markduplicates_flag = get_markduplicates_flag
     output:
-        dir = directory(get_processing_path("{sample}/qc/{sample}_qualimap_bam/")),
-        flag = get_processing_path("{sample}/bamqc_complete.flag")
+        dir = directory(get_processing_path("{run_tag}/qc/{run_tag}_qualimap_bam/")),
+        flag = get_processing_path("{run_tag}/bamqc_complete.flag")
     log:
-        stderr = get_processing_path("{sample}/logs/qualimap_bamqc.log"),
-        stdout = get_processing_path("{sample}/logs/qualimap_bamqc.stdout.log")
+        stderr = get_processing_path("{run_tag}/logs/qualimap_bamqc.log"),
+        stdout = get_processing_path("{run_tag}/logs/qualimap_bamqc.stdout.log")
     benchmark:
-        get_processing_path("{sample}/benchmarks/qualimap_bamqc.benchmark.txt")
+        get_processing_path("{run_tag}/benchmarks/qualimap_bamqc.benchmark.txt")
     params:
         memory = config.get("qualimap_memory", "10G")
     threads: 
@@ -124,7 +124,7 @@ rule qualimap_bamqc:
         mkdir -p $(dirname {log.stderr})
         
         # Log start
-        echo "Running qualimap bamqc on {wildcards.sample}" > {log.stderr}
+        echo "Running qualimap bamqc on {wildcards.run_tag}" > {log.stderr}
         echo "Input BAM: {input.bam}" >> {log.stderr}
         echo "Output directory: {output.dir}" >> {log.stderr}
         echo "Java memory: {params.memory}" >> {log.stderr}
@@ -143,7 +143,7 @@ rule qualimap_bamqc:
         fi
         
         # Create flag file to indicate completion
-        echo "BAM QC complete for sample {wildcards.sample}" > {output.flag}
+        echo "BAM QC complete for run tag {wildcards.run_tag}" > {output.flag}
         echo "Timestamp: $(date)" >> {output.flag}
         echo "Files generated:" >> {output.flag}
         echo "- Qualimap BAM QC report: {output.dir}/qualimapReport.html" >> {output.flag}
