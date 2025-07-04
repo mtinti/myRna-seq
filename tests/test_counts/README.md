@@ -6,12 +6,12 @@ gene3: 2 reads total
 ---------------------------
 
 
-snakemake --cores 10 --use-singularity --configfile test_config.yaml 
-
-snakemake --cores 10 --use-singularity --config \
-processing_dir="tests/test_counts/new_branch/processing" \
-results_dir="tests/test_counts/new_branch/results" \
-benchmark_dir="tests/test_counts/new_branch/benchmarks" \
+#test command
+snakemake --cores 10 --use-singularity --keep-going --config \
+processing_dir="tests/test_counts/test_out/processing" \
+results_dir="tests/test_counts/test_out/results" \
+benchmark_dir="tests/test_counts/test_out/benchmarks" \
 genome_index="tests/test_counts/genome/random_genome" \
 gtf_file="tests/test_counts/genome/annotation.gtf" \
-samples_csv="test_samples_counts.csv"
+samples_csv="test_samples_counts.csv" \
+cleanup_processing='True'
