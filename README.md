@@ -289,7 +289,6 @@ results/
 │   │   └── feature_counts/                # featureCounts summaries
 │   ├── benchmarks/                        # Performance benchmarks (optional)
 │   └── logs/                              # Log files (optional)
-├── benchmarks_project_summary.txt         # Project-wide benchmark summary
 └── copy_complete_all.txt                  # Pipeline completion marker
 ```
 

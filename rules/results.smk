@@ -341,11 +341,9 @@ rule copy_results:
 rule copy_results_all:
     input:
         sample_copies = expand(get_results_path("{run_tag}/copy_complete.txt"), run_tag=EFFECTIVE_SAMPLES_TO_PROCESS),
-        benchmark_report = get_processing_path("benchmarks_project_summary.txt")
     output:
         project_complete = get_results_path("copy_complete_all.txt")
     params:
-        benchmark_dest = get_results_path("benchmarks_project_summary.txt"),
         num_samples = len(SAMPLES),
         num_run_tags = len(EFFECTIVE_SAMPLES_TO_PROCESS),
         copy_fastq = config.get("copy_fastq", False),
@@ -358,8 +356,6 @@ rule copy_results_all:
         # Create log directory
         mkdir -p $(dirname {log})
         
-        # Copy the project-wide benchmark summary
-        cp {input.benchmark_report} {params.benchmark_dest} 2>> {log}
         
         # Create completion file
         echo "All results have been copied to the results directory" > {output.project_complete}
