@@ -348,7 +348,8 @@ rule copy_results_all:
         num_run_tags = len(EFFECTIVE_SAMPLES_TO_PROCESS),
         copy_fastq = config.get("copy_fastq", False),
         copy_bam = config.get("copy_bam", False),
-        cleanup_processing = config.get("cleanup_processing", False)
+        cleanup_processing = str(config.get("cleanup_processing", False)).lower(),
+        reference_dir = get_processing_path("reference")
     log:
         get_results_path("logs/copy_results_all.log")
     shell:
@@ -371,4 +372,33 @@ rule copy_results_all:
         echo "Completed copying all results" > {log}
         echo "Timestamp: $(date)" >> {log}
         echo "All individual copy operations completed successfully" >> {log}
+
+        # Remove reference directory if cleanup is enabled
+        if [ "{params.cleanup_processing}" = "true" ]; then
+            if [ -d "{params.reference_dir}" ]; then
+                echo "Removing reference directory: {params.reference_dir}" >> {log}
+
+                # Remove contents first
+                rm -rf "{params.reference_dir}"/* 2>> {log}
+                rm -rf "{params.reference_dir}"/.[!.]* 2>> {log}
+
+                # Then remove the directory itself
+                rmdir "{params.reference_dir}" 2>> {log}
+
+                # Force removal if needed
+                if [ -d "{params.reference_dir}" ]; then
+                    echo "Directory still exists, forcing removal..." >> {log}
+                    rm -rf "{params.reference_dir}" 2>> {log}
+                fi
+
+                if [ ! -d "{params.reference_dir}" ]; then
+                    echo "Successfully removed: {params.reference_dir}" >> {log}
+                else
+                    echo "WARNING: Failed to completely remove: {params.reference_dir}" >> {log}
+                    ls -la "{params.reference_dir}" 2>> {log} || echo "Cannot list directory contents" >> {log}
+                fi
+            else
+                echo "Reference directory does not exist: {params.reference_dir}" >> {log}
+            fi
+        fi
         """
