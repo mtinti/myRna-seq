@@ -116,36 +116,3 @@ rule merge_benchmarks_summary:
         echo "Benchmark summary created successfully" >> {log}
         """
 
-# Rule for combining all run tag benchmark summaries into a project-wide report - MODIFIED
-rule merge_benchmarks_all:
-    input:
-        summaries = expand(get_processing_path("{run_tag}/benchmarks_summary.txt"), run_tag=EFFECTIVE_SAMPLES_TO_PROCESS)
-    output:
-        project_report = get_processing_path("benchmarks_project_summary.txt")
-    params:
-        # Pre-calculate the number of samples and run tags
-        num_samples = len(SAMPLES),
-        num_run_tags = len(EFFECTIVE_SAMPLES_TO_PROCESS)
-    log:
-        get_processing_path("logs/benchmarks_project_summary.log")
-    run:
-        # Python code block instead of shell to avoid complex shell scripting
-        import os
-        from datetime import datetime
-        
-        # Create log directory
-        os.makedirs(os.path.dirname(log[0]), exist_ok=True)
-        
-        # Start logging
-        with open(log[0], 'w') as log_file:
-            log_file.write("Creating project-wide benchmark summary\n")
-        
-        # Create header for project report - ONLY KEEP THE FIRST TWO LINES
-        with open(output.project_report, 'w') as report:
-            report.write("PROJECT-WIDE BENCHMARK SUMMARY\n")
-            report.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-            # All other content has been removed
-        
-        # Append to log that we finished
-        with open(log[0], 'a') as log_file:
-            log_file.write("Project benchmark summary created successfully\n")
