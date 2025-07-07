@@ -8,5 +8,5 @@ SAMPLE_06,paired,ftp,ftp://localhost:2121/SAMPLE_02/sampled_10k_R1.fastq.gz,ftp:
 SAMPLE_07,single,ftp,ftp://localhost:2121/SAMPLE_03/sampled_10k_R1.fastq.gz,,206a27563c8507fd54b4d508f0b4cee9,,merged_2
 SAMPLE_08,single,ftp,ftp://localhost:2121/SAMPLE_04/sampled_10k_R1.fastq.gz,,206a27563c8507fd54b4d508f0b4cee9,,merged_2
 SAMPLE_09,interleaved,ftp,ftp://localhost:2121/SAMPLE_04/sampled_10k_R1.fastq.gz,,206a27563c8507fd54b4d508f0b4cee9,,
-SAMPLE_10,nanopore,ftp,ftp://localhost:2121/SAMPLE_04/sampled_10k_R1.fastq.gz,,206a27563c8507fd54b4d508f0b4cee9,,
-SAMPLE_11,nanopore,local,tests/test_reads/SAMPLE_03/sampled_10k_R1.fastq.gz,,206a27563c8507fd54b4d508f0b4cee9,,
+SAMPLE_11,nanopore,ftp,ftp://localhost:2121/SAMPLE_05/sampled_10k_R1.fastq.gz,,d14829c0ae07785a65fd5acf8cb85df5,,
+SAMPLE_12,nanopore,local,tests/test_reads/SAMPLE_05/sampled_10k_R1.fastq.gz,,d14829c0ae07785a65fd5acf8cb85df5,,
