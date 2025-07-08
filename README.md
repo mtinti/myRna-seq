@@ -255,7 +255,7 @@ copy_fastq: false        # Whether to copy FASTQ files to results
 copy_bam: false          # Whether to copy BAM files to results
 copy_benchmarks: true    # Whether to copy benchmark files
 copy_logs: true          # Whether to copy log files
-cleanup_processing: false  # Whether to remove processing directory after completion
+cleanup_processing: false  # Remove processing directory and reference after completion
 
 # Container support
 singularity_image: "/path/to/container.sif"
@@ -291,6 +291,9 @@ results/
 │   └── logs/                              # Log files (optional)
 └── copy_complete_all.txt                  # Pipeline completion marker
 ```
+
+If `cleanup_processing` is enabled, the pipeline also removes the `processing/reference`
+directory after this marker file is written.
 
 ## Run Tags and Sample Grouping
 
