@@ -14,14 +14,14 @@ jobs:
       - name: Set up Miniconda
         uses: conda-incubator/setup-miniconda@v2
         with:
-          python-version: 3.10
-
+          python-version: "3.10"
+      
       - name: Install Snakemake
-        run: conda install -c conda-forge -c bioconda snakemake
+        run: conda create -y -c conda-forge -c bioconda -n snakemake snakemake
 
       - name: Run Snakemake dry-run test
         run: |
-          snakemake --cores 10 --use-conda --dry-run --config \
+          conda run -n snakemake snakemake --cores 10 --use-conda --dry-run --config \
             processing_dir="tests/test_counts/test_out/processing" \
             results_dir="tests/test_counts/test_out/results" \
             benchmark_dir="tests/test_counts/test_out/benchmarks" \
