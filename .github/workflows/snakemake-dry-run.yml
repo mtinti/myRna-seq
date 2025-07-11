@@ -11,20 +11,15 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Conda
-        uses: conda-incubator/setup-miniconda@v2
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          activate-environment: snakemake
           python-version: 3.10
-          auto-activate-base: false
-          channels: bioconda,conda-forge,defaults
 
       - name: Install Snakemake
-        shell: bash -l {0}
-        run: conda install -y snakemake
+        run: pip install --no-cache-dir snakemake
 
       - name: Run Snakemake dry-run test
-        shell: bash -l {0}
         run: |
           snakemake --cores 10 --use-singularity --dry-run --config \
             processing_dir="tests/test_counts/test_out/processing" \
