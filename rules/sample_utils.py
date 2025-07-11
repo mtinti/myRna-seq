@@ -16,9 +16,6 @@ def ensure_directories_exist(config):
     # Reference directory in processing folder
     os.makedirs(os.path.join(config['processing_dir'], 'reference'), exist_ok=True)
     
-    # Create merged directory for run tag groups
-    os.makedirs(os.path.join(config['processing_dir'], 'merged'), exist_ok=True)
-    
     print(f"Created directory structure at {config['processing_dir']} and {config['results_dir']}")
 
 def copy_reference_files(config):
@@ -237,9 +234,8 @@ def load_samples(config):
                         print(f"Error: Run tag '{run_tag}' contains samples with different read types: {read_types}")
                         raise ValueError(f"Run tag '{run_tag}' contains samples with different read types: {read_types}")
             
-            # Create directories for run tags
+            # Report run tag information
             for run_tag in run_tags:
-                create_run_tag_directories(config, run_tag)
                 print(f"  Run tag: {run_tag} - Contains {len(run_tag_samples[run_tag])} samples: {', '.join(run_tag_samples[run_tag])}")
         else:
             # If no run tag column, each sample is its own effective sample
@@ -247,13 +243,12 @@ def load_samples(config):
             for sample in effective_samples:
                 run_tag_samples[sample] = [sample]
         
-        # Create directories for all samples
+        # Print summary of loaded samples
         print(f"Loaded {len(samples_df)} samples:")
         for sample, row in samples_df.iterrows():
             sample_type = row['read_type']
             source_type = row['source_type']
             print(f"  {sample}: {sample_type}, {source_type} source")
-            create_sample_directories(config, sample)
         
         return samples_df, run_tag_samples, run_tags, effective_samples
     

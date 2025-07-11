@@ -12,6 +12,7 @@ A comprehensive RNA-seq analysis pipeline built with Snakemake that supports mul
 - **Containerized**: Singularity support
 - **Benchmarking**: Detailed performance metrics
 - **Modular design**: Rules are automatically included based on your data
+- **On-demand directories**: Sample folders are created only when processing starts and cleaned up when finished
 
 ## Pipeline Architecture
 
@@ -292,8 +293,9 @@ results/
 └── copy_complete_all.txt                  # Pipeline completion marker
 ```
 
-If `cleanup_processing` is enabled, the pipeline also removes the `processing/reference`
-directory after this marker file is written.
+If `cleanup_processing` is enabled, the pipeline removes each sample's processing
+directory after the results are copied. The `processing/reference` directory is
+also removed at the end of the run.
 
 ## Run Tags and Sample Grouping
 
