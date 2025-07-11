@@ -1,0 +1,37 @@
+name: Snakemake Dry Run
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Miniforge and Snakemake
+        shell: bash -l {0}
+        run: |
+          wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
+          bash Miniforge3.sh -b -p "${HOME}/conda"
+          source "${HOME}/conda/etc/profile.d/conda.sh"
+          source "${HOME}/conda/etc/profile.d/mamba.sh"
+          conda activate
+          conda create -y -c conda-forge -c bioconda -n snakemake snakemake
+          conda activate snakemake
+
+      - name: Run Snakemake dry-run test
+        shell: bash -l {0}
+        run: |
+          source "${HOME}/conda/etc/profile.d/conda.sh"
+          conda activate snakemake
+          snakemake --cores 10 --use-conda --dry-run --config \
+            processing_dir="tests/test_counts/test_out/processing" \
+            results_dir="tests/test_counts/test_out/results" \
+            benchmark_dir="tests/test_counts/test_out/benchmarks" \
+            genome_index="tests/test_counts/genome/random_genome" \
+            gtf_file="tests/test_counts/genome/annotation.gtf" \
+            samples_csv="test_samples_counts.csv" \
+            cleanup_processing='True'
