@@ -27,7 +27,7 @@ jobs:
         run: |
           source "${HOME}/conda/etc/profile.d/conda.sh"
           conda activate snakemake
-          snakemake --cores 10 --use-singularity --dry-run --config \
+          snakemake --cores 10 --use-conda --dry-run --config \
             processing_dir="tests/test_counts/test_out/processing" \
             results_dir="tests/test_counts/test_out/results" \
             benchmark_dir="tests/test_counts/test_out/benchmarks" \
