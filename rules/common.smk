@@ -119,6 +119,25 @@ def get_nanopore_fastq(wildcards):
     sample = wildcards.sample
     return get_processing_path(f"{sample}/{sample}.fastq.gz")
 
+# Generic helper for determining fastp input based on source type
+def get_fastp_input(wildcards):
+    """Return the R1/R2 files for fastp based on sample source"""
+    sample = wildcards.sample
+    source_type = get_source_type(sample)
+    if source_type == "sra_paired":
+        return {
+            "r1": get_processing_path(f"{sample}/{sample}_R1.fastq.gz"),
+            "r2": get_processing_path(f"{sample}/{sample}_R2.fastq.gz"),
+        }
+    return {
+        "r1": get_processing_path(f"{sample}/{sample}.1.fastq.gz"),
+        "r2": get_processing_path(f"{sample}/{sample}.2.fastq.gz"),
+    }
+
+def skip_md5_for_sra(wildcards):
+    """Return True if MD5 checks should be skipped for this sample"""
+    return get_source_type(wildcards.sample) == "sra_paired"
+
 # Helper functions for accessing cleaned FASTQ files (after fastp)
 def get_cleaned_fastq_r1(wildcards):
     """Get the cleaned R1 fastq file for a paired-end sample"""

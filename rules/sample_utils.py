@@ -159,7 +159,7 @@ def load_samples(config):
             raise ValueError(f"Invalid read_type values: {', '.join(map(str, invalid_read_types))}. Must be one of: {', '.join(valid_read_types)}")
         
         # Validate source_type values
-        valid_source_types = ['local', 'ftp']
+        valid_source_types = ['local', 'ftp', 'sra_paired']
         invalid_source_types = samples_df[~samples_df['source_type'].isin(valid_source_types)]['source_type'].unique()
         
         if len(invalid_source_types) > 0:
@@ -169,9 +169,14 @@ def load_samples(config):
         # Validate file paths based on read type and source type
         for idx, row in samples_df.iterrows():
             if row['read_type'] == 'paired':
-                if pd.isna(row.get('file_path_1', None)) or pd.isna(row.get('file_path_2', None)):
-                    print(f"Error: Missing file_path_1 or file_path_2 for paired-end sample {row['sample_name']}")
-                    raise ValueError(f"Missing file_path_1 or file_path_2 for paired-end sample {row['sample_name']}")
+                if row['source_type'] == 'sra_paired':
+                    if pd.isna(row.get('file_path_1', None)):
+                        print(f"Error: Missing SRA accession for sample {row['sample_name']}")
+                        raise ValueError(f"Missing SRA accession for sample {row['sample_name']}")
+                else:
+                    if pd.isna(row.get('file_path_1', None)) or pd.isna(row.get('file_path_2', None)):
+                        print(f"Error: Missing file_path_1 or file_path_2 for paired-end sample {row['sample_name']}")
+                        raise ValueError(f"Missing file_path_1 or file_path_2 for paired-end sample {row['sample_name']}")
             else:  # single-end, interleaved, or nanopore
                 if pd.isna(row.get('file_path_1', None)):
                     print(f"Error: Missing file_path_1 for {row['read_type']} sample {row['sample_name']}")

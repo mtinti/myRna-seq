@@ -167,7 +167,7 @@ Your `samples.csv` file should include these columns:
 |--------|----------|-------------|
 | `sample_name` | Yes | Unique identifier for each sample |
 | `read_type` | Yes | One of: `paired`, `single`, `interleaved`, `nanopore` |
-| `source_type` | Yes | Either `local` or `ftp` |
+| `source_type` | Yes | `local`, `ftp`, or `sra_paired` |
 | `file_path_1` | Yes | Path to first/only FASTQ file |
 | `file_path_2` | Conditional | Path to second FASTQ file (required for `paired` only) |
 | `checksum_1` | Optional | MD5 checksum for file_path_1 |
@@ -183,6 +183,17 @@ illumina_se_01,single,ftp,ftp://server.com/sample2.fastq.gz,,xyz789,,experiment_
 interleaved_01,interleaved,local,/data/sample3_interleaved.fastq.gz,,mno345,,experiment_A
 nanopore_01,nanopore,local,/data/sample4_nanopore.fastq.gz,,pqr678,,long_read_set
 ```
+
+## Using SRA Data
+
+The pipeline can download reads directly from NCBI SRA. Set `source_type` to `sra_paired` and specify the accession in `file_path_1`:
+
+```csv
+sample_name,read_type,source_type,file_path_1,file_path_2,checksum_1,checksum_2
+MySRA,paired,sra_paired,SRR12345678,,,
+```
+
+SRA reads are downloaded with `fastq-dump`, reformatted, and gzipped before entering the standard workflow.
 
 ## Processing Differences by Data Type
 

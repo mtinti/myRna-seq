@@ -10,9 +10,9 @@ def is_interleaved_sample(sample):
 # Rule for fastp processing of paired-end and split interleaved reads
 rule fastp_paired_end:
     input:
-        r1 = lambda wc: get_processing_path(f"{wc.sample}/{wc.sample}.1.fastq.gz"),
-        r2 = lambda wc: get_processing_path(f"{wc.sample}/{wc.sample}.2.fastq.gz"),
-        checksums = lambda wc: get_processing_path(f"{wc.sample}/checksums_paired_verified.flag") if not is_interleaved_sample(wc.sample) else []
+        r1 = lambda wc: get_fastp_input(wc)["r1"],
+        r2 = lambda wc: get_fastp_input(wc)["r2"],
+        checksums = lambda wc: [] if skip_md5_for_sra(wc) or is_interleaved_sample(wc.sample) else get_processing_path(f"{wc.sample}/checksums_paired_verified.flag")
     params:
         split_complete = lambda wc: get_processing_path(f"{wc.sample}/split_interleaved_complete.flag") if is_interleaved_sample(wc.sample) else ""
     output:
