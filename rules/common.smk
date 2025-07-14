@@ -44,7 +44,7 @@ def get_read_type(sample):
         return 'paired'
 
 def get_source_type(sample):
-    """Return 'local' or 'ftp' for a sample"""
+    """Return the source_type for a sample (e.g. 'local', 'ftp', 'sra_paired')"""
     try:
         return SAMPLES_DF.loc[sample, 'source_type']
     except Exception as e:

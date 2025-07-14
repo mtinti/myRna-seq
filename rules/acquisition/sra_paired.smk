@@ -2,9 +2,12 @@
 Rules for downloading paired-end reads directly from NCBI SRA
 """
 import os
+import re
 
 # Download FASTQ files from SRA
 rule download_sra:
+    wildcard_constraints:
+        sample = "|".join([re.escape(s) for s in SRA_PAIRED_SAMPLES])
     output:
         r1 = temp(get_processing_path("{sample}/sra_download/{sample}_1.fastq")),
         r2 = temp(get_processing_path("{sample}/sra_download/{sample}_2.fastq"))
@@ -64,8 +67,8 @@ rule reformat_sra_headers:
         r2 = temp(get_processing_path("{sample}/sra_reformatted/{sample}_2.fq"))
     shell:
         """
-        awk '{print (NR%4==1) ? "@1_" ++i " READ/1" : $0}' {input.r1} > {output.r1}
-        awk '{print (NR%4==1) ? "@1_" ++i " READ/2" : $0}' {input.r2} > {output.r2}
+        awk '{{print (NR%4==1) ? "@1_" ++i " READ/1" : $0}}' {input.r1} > {output.r1}
+        awk '{{print (NR%4==1) ? "@1_" ++i " READ/2" : $0}}' {input.r2} > {output.r2}
         """
 
 # Compress reformatted files
