@@ -32,7 +32,19 @@ def get_align_input(wildcards):
 # Rule for aligning paired-end and split interleaved reads with bowtie2
 rule align_paired_end:
     wildcard_constraints:
-        sample = "|".join([re.escape(s) for s in PAIRED_LOCAL_SAMPLES + PAIRED_FTP_SAMPLES + [s for s in SAMPLES if SAMPLES_DF.loc[s, 'read_type'] == 'interleaved']])
+        sample = "|".join(
+            [
+                re.escape(s)
+                for s in PAIRED_LOCAL_SAMPLES
+                + PAIRED_FTP_SAMPLES
+                + SRA_PAIRED_SAMPLES
+                + [
+                    s
+                    for s in SAMPLES
+                    if SAMPLES_DF.loc[s, 'read_type'] == 'interleaved'
+                ]
+            ]
+        )
     input:
         unpack(get_align_input)
     output:
