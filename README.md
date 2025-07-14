@@ -193,7 +193,7 @@ sample_name,read_type,source_type,file_path_1,file_path_2,checksum_1,checksum_2
 MySRA,paired,sra_paired,SRR12345678,,,
 ```
 
-SRA reads are downloaded with `fastq-dump`, reformatted, and gzipped before entering the standard workflow.
+SRA reads are downloaded with `fasterq-dump`, reformatted, and gzipped before entering the standard workflow.
 
 ## Processing Differences by Data Type
 

@@ -13,7 +13,8 @@ rule download_sra:
         r2 = temp(get_processing_path("{sample}/sra_download/{sample}_2.fastq"))
     params:
         accession = lambda w: SAMPLES_DF.loc[w.sample, 'file_path_1'],
-        outdir = lambda w: get_processing_path(f"{w.sample}/sra_download")
+        outdir = lambda w: get_processing_path(f"{w.sample}/sra_download"),
+        tmpdir = lambda w: get_processing_path(f"{w.sample}/sra_tmp")
     log:
         get_processing_path("{sample}/logs/sra_download.log")
     threads: 8
@@ -22,19 +23,9 @@ rule download_sra:
         "../../envs/sra.yaml"
     shell:
         """
-        mkdir -p {params.outdir}
-        fastq-dump \
-            --split-3 \
-            --threads {threads} \
-            --outdir {params.outdir} \
-            --skip-technical \
-            --clip \
-            --read-filter pass \
-            --qual-filter \
-            --split-spot \
-            --defline-seq '@$ac.$si.$sg/$ri' \
-            --defline-qual '+' \
-            {params.accession}
+        mkdir -p {params.outdir} {params.tmpdir}
+        fasterq-dump --threads {threads} --split-files \
+            --outdir {params.outdir} --temp {params.tmpdir} {params.accession}
         mv {params.outdir}/{params.accession}_1.fastq {output.r1}
         mv {params.outdir}/{params.accession}_2.fastq {output.r2}
         """
