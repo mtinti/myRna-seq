@@ -21,6 +21,8 @@ rule download_sra:
     retries: 3
     conda:
         "../../envs/sra.yaml"
+    singularity:
+        config.get("singularity_image", "")
     shell:
         """
         mkdir -p {params.outdir} {params.tmpdir}
@@ -37,6 +39,10 @@ rule validate_sra_download:
         r2 = get_processing_path("{sample}/sra_download/{sample}_2.fastq")
     output:
         flag = get_processing_path("{sample}/sra_download/.validated")
+    conda:
+        "../../envs/core.yaml"
+    singularity:
+        config.get("singularity_image", "")
     run:
         if os.path.getsize(input.r1) == 0 or os.path.getsize(input.r2) == 0:
             raise ValueError(f"Empty files downloaded for {wildcards.sample}")
@@ -56,6 +62,10 @@ rule reformat_sra_headers:
     output:
         r1 = temp(get_processing_path("{sample}/sra_reformatted/{sample}_1.fq")),
         r2 = temp(get_processing_path("{sample}/sra_reformatted/{sample}_2.fq"))
+    conda:
+        "../../envs/core.yaml"
+    singularity:
+        config.get("singularity_image", "")
     shell:
         """
         awk '{{print (NR%4==1) ? "@1_" ++i " READ/1" : $0}}' {input.r1} > {output.r1}
@@ -73,6 +83,8 @@ rule gzip_sra_fastq:
     threads: 4
     conda:
         "../../envs/core.yaml"
+    singularity:
+        config.get("singularity_image", "")
     shell:
         """
         gzip -c {input.r1} > {output.r1}
