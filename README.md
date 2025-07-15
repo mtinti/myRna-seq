@@ -194,6 +194,7 @@ MySRA,paired,sra_paired,SRR12345678,,,
 ```
 
 SRA reads are downloaded with `fasterq-dump`, reformatted, and gzipped before entering the standard workflow.
+Each download touches a `.download_complete` file to signal that the FASTQ files are fully written before validation and further processing.
 
 ## Processing Differences by Data Type
 

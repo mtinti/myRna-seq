@@ -10,7 +10,8 @@ rule download_sra:
         sample = "|".join([re.escape(s) for s in SRA_PAIRED_SAMPLES])
     output:
         r1 = temp(get_processing_path("{sample}/sra_download/{sample}_1.fastq")),
-        r2 = temp(get_processing_path("{sample}/sra_download/{sample}_2.fastq"))
+        r2 = temp(get_processing_path("{sample}/sra_download/{sample}_2.fastq")),
+        flag = get_processing_path("{sample}/sra_download/.download_complete")
     params:
         accession = lambda w: SAMPLES_DF.loc[w.sample, 'file_path_1'],
         outdir = lambda w: get_processing_path(f"{w.sample}/sra_download"),
@@ -32,13 +33,15 @@ rule download_sra:
             mv {params.outdir}/{params.accession}_1.fastq {output.r1}
             mv {params.outdir}/{params.accession}_2.fastq {output.r2}
         fi
+        touch {output.flag}
         """
 
 # Validate SRA download
 rule validate_sra_download:
     input:
         r1 = get_processing_path("{sample}/sra_download/{sample}_1.fastq"),
-        r2 = get_processing_path("{sample}/sra_download/{sample}_2.fastq")
+        r2 = get_processing_path("{sample}/sra_download/{sample}_2.fastq"),
+        done = get_processing_path("{sample}/sra_download/.download_complete")
     output:
         flag = get_processing_path("{sample}/sra_download/.validated")
     conda:
