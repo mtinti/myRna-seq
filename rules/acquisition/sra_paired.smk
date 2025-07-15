@@ -28,8 +28,10 @@ rule download_sra:
         mkdir -p {params.outdir} {params.tmpdir}
         fasterq-dump --threads {threads} --split-files \
             --outdir {params.outdir} --temp {params.tmpdir} {params.accession}
-        mv {params.outdir}/{params.accession}_1.fastq {output.r1}
-        mv {params.outdir}/{params.accession}_2.fastq {output.r2}
+        if [ "{params.accession}" != "{wildcards.sample}" ]; then
+            mv {params.outdir}/{params.accession}_1.fastq {output.r1}
+            mv {params.outdir}/{params.accession}_2.fastq {output.r2}
+        fi
         """
 
 # Validate SRA download
