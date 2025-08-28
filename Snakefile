@@ -116,6 +116,7 @@ for sample in SAMPLES:
 # Categorize samples by type
 PAIRED_LOCAL_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] == 'paired') and (SAMPLES_DF.loc[s, 'source_type'] == 'local')]
 PAIRED_FTP_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] == 'paired') and (SAMPLES_DF.loc[s, 'source_type'] == 'ftp')]
+SRA_PAIRED_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] == 'paired') and (SAMPLES_DF.loc[s, 'source_type'] == 'sra_paired')]
 SINGLE_LOCAL_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] in ['single', 'interleaved']) and (SAMPLES_DF.loc[s, 'source_type'] == 'local')]
 SINGLE_FTP_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] in ['single', 'interleaved']) and (SAMPLES_DF.loc[s, 'source_type'] == 'ftp')]
 NANOPORE_LOCAL_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] == 'nanopore') and (SAMPLES_DF.loc[s, 'source_type'] == 'local')]
@@ -124,6 +125,7 @@ NANOPORE_FTP_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] ==
 # Print sample categorization
 print(f"Paired-end, local samples: {len(PAIRED_LOCAL_SAMPLES)}")
 print(f"Paired-end, FTP samples: {len(PAIRED_FTP_SAMPLES)}")
+print(f"Paired-end, SRA samples: {len(SRA_PAIRED_SAMPLES)}")
 print(f"Single-end/Interleaved, local samples: {len(SINGLE_LOCAL_SAMPLES)}")
 print(f"Single-end/Interleaved, FTP samples: {len(SINGLE_FTP_SAMPLES)}")
 print(f"Nanopore, local samples: {len(NANOPORE_LOCAL_SAMPLES)}")
@@ -171,6 +173,9 @@ if PAIRED_LOCAL_SAMPLES:
 if PAIRED_FTP_SAMPLES:
     include: "rules/acquisition/ftp_paired.smk"
 
+if SRA_PAIRED_SAMPLES:
+    include: "rules/acquisition/sra_paired.smk"
+
 if len(SINGLE_LOCAL_SAMPLES) + len(NANOPORE_LOCAL_SAMPLES) > 0:
     include: "rules/acquisition/local_single.smk"
 
@@ -185,7 +190,7 @@ if len(SINGLE_LOCAL_SAMPLES) + len(SINGLE_FTP_SAMPLES) + len(NANOPORE_LOCAL_SAMP
     include: "rules/checksum/single_checksum.smk"
 
 # Quality filtering rules
-if len(PAIRED_LOCAL_SAMPLES) + len(PAIRED_FTP_SAMPLES) + len([
+if len(PAIRED_LOCAL_SAMPLES) + len(PAIRED_FTP_SAMPLES) + len(SRA_PAIRED_SAMPLES) + len([
     s for s in SAMPLES if SAMPLES_DF.loc[s, 'read_type'] == 'interleaved'
 ]) > 0:
     include: "rules/fastp/paired_fastp.smk"
@@ -198,7 +203,7 @@ if any(SAMPLES_DF.loc[s, 'read_type'] == 'interleaved' for s in SAMPLES):
     include: "rules/fastp/split_interleaved.smk"
 
 # Alignment rules
-if len(PAIRED_LOCAL_SAMPLES) + len(PAIRED_FTP_SAMPLES) + len([s for s in SAMPLES if SAMPLES_DF.loc[s, 'read_type'] == 'interleaved']) > 0:
+if len(PAIRED_LOCAL_SAMPLES) + len(PAIRED_FTP_SAMPLES) + len(SRA_PAIRED_SAMPLES) + len([s for s in SAMPLES if SAMPLES_DF.loc[s, 'read_type'] == 'interleaved']) > 0:
     include: "rules/alignment/paired_align.smk"
 
 if len([s for s in SINGLE_LOCAL_SAMPLES + SINGLE_FTP_SAMPLES if SAMPLES_DF.loc[s, 'read_type'] == 'single']) > 0:
