@@ -208,6 +208,7 @@ Each download touches a `.download_complete` file to signal that the FASTQ files
 | Mark duplicates | ✅ Yes | ✅ Yes | ❌ No |
 | Qualimap BAM QC | ✅ Yes | ✅ Yes | ❌ No |
 | Qualimap RNA-seq QC | ✅ Yes | ✅ Yes | ❌ No |
+| FeatureCounts QC | ✅ Yes | ✅ Yes | ✅ Yes |
 
 ### Alignment Parameters
 
