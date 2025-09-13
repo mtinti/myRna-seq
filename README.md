@@ -356,3 +356,15 @@ snakemake --cores 8 --resources network=2
 # Limit concurrent FTP downloads
 snakemake --cores 8 --resources network=2
 ```
+### Standalone MultiQC
+
+A dedicated `MultiqcOnly.smk` workflow is provided to generate a consolidated MultiQC report from existing pipeline outputs. This standalone workflow expects results organized in the same format as the main RNA-seq pipeline and can be executed with:
+
+```bash
+snakemake --snakefile MultiqcOnly.smk \
+  --config results_dir=/app/SNAKEMAKE_new/myRna-seq/results/result_vsgs/ \
+  samples_csv=/app/SNAKEMAKE_new/myRna-seq/samples_multiqc.csv \
+  --cores 1 --use-conda
+```
+
+This allows MultiQC to be run independently on previously generated results.
