@@ -362,8 +362,8 @@ A dedicated `MultiqcOnly.smk` workflow is provided to generate a consolidated Mu
 
 ```bash
 snakemake --snakefile MultiqcOnly.smk \
-  --config results_dir=/app/SNAKEMAKE_new/myRna-seq/results/result_vsgs/ \
-  samples_csv=/app/SNAKEMAKE_new/myRna-seq/samples_multiqc.csv \
+  --config results_dir=/path/to/pipeline/results/ \
+  samples_csv=/path/to/samples.csv \
   --cores 1 --use-conda
 ```
 
