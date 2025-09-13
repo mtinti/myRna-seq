@@ -146,7 +146,10 @@ extra_fn_clean_exts:
   - '.1'
   - '.picard'
   - '_qualimap_bam'
-  - '.1'  
+  - '.1'
+  - '_R1'
+  - '_qualimap_rnaseq'  
+
 fn_ignore_files:
     - '*_unique.txt.summary'
 
