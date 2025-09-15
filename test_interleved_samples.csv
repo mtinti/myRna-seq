@@ -1,4 +1,0 @@
-sample_name,read_type,source_type,file_path_1,file_path_2,checksum_1,checksum_2
-SRR17052122,interleaved,ftp,ftp.sra.ebi.ac.uk/vol1/fastq/SRR170/022/SRR17052122/SRR17052122.fastq.gz,,d00ed90a5f073d015d043704028a1f05,
-ERR1328272,single,ftp,ftp.sra.ebi.ac.uk/vol1/fastq/ERR132/002/ERR1328272/ERR1328272.fastq.gz,,bb0e33ca210d6694931e7fbdccdd0db0,
-ERR1395523,paired,ftp,ftp.sra.ebi.ac.uk/vol1/fastq/ERR139/003/ERR1395523/ERR1395523_1.fastq.gz,ftp.sra.ebi.ac.uk/vol1/fastq/ERR139/003/ERR1395523/ERR1395523_2.fastq.gz,6a32d3ddcc5ae266ef45219b97d461a0,e88c7d3e0c3c78adc7694467406edee9
