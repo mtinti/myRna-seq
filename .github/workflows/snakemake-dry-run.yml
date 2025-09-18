@@ -33,5 +33,20 @@ jobs:
             benchmark_dir="tests/test_counts/test_out/benchmarks" \
             genome_index="tests/test_counts/genome/random_genome" \
             gtf_file="tests/test_counts/genome/annotation.gtf" \
-            samples_csv="test_samples.csv" \
+            samples_csv="test_samples_local.csv" \
+            cleanup_processing='True'
+
+            
+      - name: Run Snakemake test
+        shell: bash -l {0}
+        run: |
+          source "${HOME}/conda/etc/profile.d/conda.sh"
+          conda activate snakemake
+          snakemake --cores 10 --use-conda --dry-run --config \
+            processing_dir="tests/test_counts/test_out/processing" \
+            results_dir="tests/test_counts/test_out/results" \
+            benchmark_dir="tests/test_counts/test_out/benchmarks" \
+            genome_index="tests/test_counts/genome/random_genome" \
+            gtf_file="tests/test_counts/genome/annotation.gtf" \
+            samples_csv="test_samples_local.csv" \
             cleanup_processing='True'
