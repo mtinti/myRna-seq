@@ -138,7 +138,7 @@ results_dir="tests/test_counts/new_branch/results" \
 benchmark_dir="tests/test_counts/new_branch/benchmarks" \
 genome_index="tests/test_counts/genome/random_genome" \
 gtf_file="tests/test_counts/genome/annotation.gtf" \
-samples_csv="test_samples_counts.csv"
+samples_csv="test_samples_local.csv.csv"
 ```
 
 Expected output from the test dataset:
