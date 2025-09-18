@@ -4,7 +4,7 @@ A comprehensive RNA-seq analysis pipeline built with Snakemake that supports mul
 
 ## Features
 
-- **Multi-format support**: Paired-end, single-end, interleaved, and nanopore data
+- **Multi-format support**: Paired-end, single-end and nanopore data
 - **Flexible input sources**: Local files and FTP downloads
 - **Quality control**: Comprehensive QC with fastp, samtools, and Qualimap
 - **Run tag grouping**: Combine multiple samples for joint analysis
