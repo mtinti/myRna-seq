@@ -50,3 +50,4 @@ jobs:
             gtf_file="tests/test_counts/genome/annotation.gtf" \
             samples_csv="test_samples_local.csv" \
             cleanup_processing='True'
+          ls tests/test_counts/test_out/results -l
