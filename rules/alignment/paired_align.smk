@@ -1,35 +1,20 @@
 """
-Rules for alignment with bowtie2 for paired-end and split interleaved reads
+Rules for alignment with bowtie2 for paired-end reads
 Including read group information for Picard compatibility
 """
 import os
 import re
 
 def get_align_input(wildcards):
-    """Return input files for the bowtie2 alignment rule.
+    """Return input files for the bowtie2 alignment rule."""
 
-    As with the fastp rule we always provide ``split_complete`` and ``fastp_flag``
-    keys so that the shell block can reference them even when they are not
-    applicable to a particular sample type.
-    """
+    return {
+        'r1': get_processing_path(f"{wildcards.sample}/{wildcards.sample}.1.cleaned.fastq.gz"),
+        'r2': get_processing_path(f"{wildcards.sample}/{wildcards.sample}.2.cleaned.fastq.gz"),
+        'fastp_flag': get_processing_path(f"{wildcards.sample}/fastp_paired_complete.flag")
+    }
 
-    if SAMPLES_DF.loc[wildcards.sample, 'read_type'] == 'interleaved':
-
-        return {
-            'r1': get_processing_path(f"{wildcards.sample}/{wildcards.sample}.1.cleaned.fastq.gz"),
-            'r2': get_processing_path(f"{wildcards.sample}/{wildcards.sample}.2.cleaned.fastq.gz"),
-            'split_complete': get_processing_path(f"{wildcards.sample}/split_interleaved_complete.flag"),
-            'fastp_flag': get_processing_path(f"{wildcards.sample}/fastp_paired_complete.flag")
-
-        }
-    else:
-        return {
-            'r1': get_processing_path(f"{wildcards.sample}/{wildcards.sample}.1.cleaned.fastq.gz"),
-            'r2': get_processing_path(f"{wildcards.sample}/{wildcards.sample}.2.cleaned.fastq.gz"),
-            'fastp_flag': get_processing_path(f"{wildcards.sample}/fastp_paired_complete.flag")
-        }
-
-# Rule for aligning paired-end and split interleaved reads with bowtie2
+# Rule for aligning paired-end reads with bowtie2
 rule align_paired_end:
     wildcard_constraints:
         sample = "|".join(
@@ -38,11 +23,6 @@ rule align_paired_end:
                 for s in PAIRED_LOCAL_SAMPLES
                 + PAIRED_FTP_SAMPLES
                 + SRA_PAIRED_SAMPLES
-                + [
-                    s
-                    for s in SAMPLES
-                    if SAMPLES_DF.loc[s, 'read_type'] == 'interleaved'
-                ]
             ]
         )
     input:
@@ -53,7 +33,6 @@ rule align_paired_end:
         stats = get_processing_path("{sample}/qc/bowtie2/{sample}.bowtie2_paired_stats.txt"),
         flag = get_processing_path("{sample}/alignment_paired_complete.flag")
     params:
-        split_complete = lambda wc: get_processing_path(f"{wc.sample}/split_interleaved_complete.flag") if SAMPLES_DF.loc[wc.sample, 'read_type'] == 'interleaved' else "",
         genome_index = config["processing_genome_index"],  # Use the copied genome index
         # Read group parameters
         rg_id = lambda wildcards: wildcards.sample,
@@ -80,18 +59,9 @@ rule align_paired_end:
         mkdir -p $(dirname {output.bam})
         mkdir -p $(dirname {output.stats})
         
-        # Determine input file type
-
-        split_flag="{params.split_complete}"
-        if [[ -n "$split_flag" && -f "$split_flag" ]]; then
-        echo "Aligning split interleaved reads for {wildcards.sample}" > {log}
-            input_r1={input.r1}
-            input_r2={input.r2}
-        else
         echo "Aligning paired-end reads for {wildcards.sample}" > {log}
-            input_r1={input.r1}
-            input_r2={input.r2}
-        fi
+        input_r1={input.r1}
+        input_r2={input.r2}
         
         echo "Using genome index: {params.genome_index}" >> {log}
         echo "Input files: $input_r1 and $input_r2" >> {log}
@@ -186,12 +156,7 @@ rule align_paired_end:
         
         # Create flag file to indicate completion
 
-        if [[ -n "$split_flag" && -f "$split_flag" ]]; then
-            sample_type="split interleaved"
-        else
-            sample_type="paired-end"
-        fi
-        echo "Alignment complete for $sample_type sample {wildcards.sample}" > {output.flag}
+        echo "Alignment complete for paired-end sample {wildcards.sample}" > {output.flag}
         echo "Timestamp: $(date)" >> {output.flag}
         echo "Files created:" >> {output.flag}
         echo "- BAM file: {output.bam}" >> {output.flag}
