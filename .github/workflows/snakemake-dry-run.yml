@@ -51,3 +51,4 @@ jobs:
             samples_csv="test_samples_local.csv" \
             cleanup_processing='True'
           ls tests/test_counts/test_out/results -l
+          head tests/test_counts/test_out/results/SAMPLE_02/SAMPLE_02_counts_single_all.txt
