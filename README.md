@@ -159,7 +159,7 @@ Your `samples.csv` file should include these columns:
 | Column | Required | Description |
 |--------|----------|-------------|
 | `sample_name` | Yes | Unique identifier for each sample |
-| `read_type` | Yes | One of: `paired`, `single`, `interleaved`, `nanopore` |
+| `read_type` | Yes | One of: `paired`, `single`, `nanopore` |
 | `source_type` | Yes | `local`, `ftp`, or `sra_paired` |
 | `file_path_1` | Yes | Path to first/only FASTQ file |
 | `file_path_2` | Conditional | Path to second FASTQ file (required for `paired` only) |
@@ -173,7 +173,6 @@ Your `samples.csv` file should include these columns:
 sample_name,read_type,source_type,file_path_1,file_path_2,checksum_1,checksum_2,run_tag
 illumina_pe_01,paired,local,/data/sample1_R1.fastq.gz,/data/sample1_R2.fastq.gz,abc123,def456,experiment_A
 illumina_se_01,single,ftp,ftp://server.com/sample2.fastq.gz,,xyz789,,experiment_B
-interleaved_01,interleaved,local,/data/sample3_interleaved.fastq.gz,,mno345,,experiment_A
 nanopore_01,nanopore,local,/data/sample4_nanopore.fastq.gz,,pqr678,,long_read_set
 ```
 
