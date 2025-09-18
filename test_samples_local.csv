@@ -3,4 +3,5 @@ SAMPLE_01,paired,local,tests/test_counts/reads/simulated_R1.fastq.gz,tests/test_
 SAMPLE_01a,paired,local,tests/test_counts/reads/simulated_R1.fastq.gz,tests/test_counts/reads/simulated_R2.fastq.gz,7642f3f6291b5f45ac243b108ca326ab,46d0255eac182a232c3911ee6371fd8e,merged_1
 SAMPLE_01b,paired,local,tests/test_counts/reads/simulated_R1.fastq.gz,tests/test_counts/reads/simulated_R2.fastq.gz,7642f3f6291b5f45ac243b108ca326ab,46d0255eac182a232c3911ee6371fd8e,merged_1
 SAMPLE_02,single,local,tests/test_counts/reads/simulated_R1.fastq.gz,,7642f3f6291b5f45ac243b108ca326ab,,
-SAMPLE_3,nanopore,local,tests/test_counts/reads/simulated_R1.fastq.gz,,7642f3f6291b5f45ac243b108ca326ab,,
+SAMPLE_03,nanopore,local,tests/test_counts/reads/simulated_R1.fastq.gz,,7642f3f6291b5f45ac243b108ca326ab,,
+
