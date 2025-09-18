@@ -17,7 +17,7 @@ A comprehensive RNA-seq analysis pipeline built with Snakemake that supports mul
 ## Pipeline Architecture
 
 ```
-Input Data (4 types)
+Input Data
     ↓
 Acquisition & Checksum Verification
     ↓
