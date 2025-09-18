@@ -1,0 +1,6 @@
+sample_name,read_type,source_type,file_path_1,file_path_2,checksum_1,checksum_2,run_tag
+SAMPLE_04,paired,ftp,ftp://localhost:2121/simulated_R1.fastq.gz,ftp://localhost:2121/simulated_R2.fastq.gz,7642f3f6291b5f45ac243b108ca326ab,46d0255eac182a232c3911ee6371fd8e,
+SAMPLE_04a,paired,ftp,ftp://localhost:2121/simulated_R1.fastq.gz,ftp://localhost:2121/simulated_R2.fastq.gz,7642f3f6291b5f45ac243b108ca326ab,46d0255eac182a232c3911ee6371fd8e,merged_2
+SAMPLE_04b,paired,ftp,ftp://localhost:2121/simulated_R1.fastq.gz,ftp://localhost:2121/simulated_R2.fastq.gz,7642f3f6291b5f45ac243b108ca326ab,46d0255eac182a232c3911ee6371fd8e,merged_2
+SAMPLE_05,single,ftp,ftp://localhost:2121/simulated_R1.fastq.gz,,7642f3f6291b5f45ac243b108ca326ab,,
+SAMPLE_06,nanopore,ftp,ftp://localhost:2121/simulated_R1.fastq.gz,,7642f3f6291b5f45ac243b108ca326ab,,
