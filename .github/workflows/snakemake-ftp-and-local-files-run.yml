@@ -40,7 +40,7 @@ jobs:
           conda create -y -c conda-forge -c bioconda -n snakemake snakemake
           conda activate snakemake
 
-      - name: Run Snakemake dry-run test (FTP)
+      - name: Run Snakemake test (FTP)
         shell: bash -l {0}
         run: |
           source "${HOME}/conda/etc/profile.d/conda.sh"
