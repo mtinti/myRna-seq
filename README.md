@@ -1,6 +1,6 @@
 # RNA-seq Snakemake Pipeline
 
-A comprehensive RNA-seq analysis pipeline built with Snakemake that supports multiple data types including paired-end, single-end, interleaved, and nanopore sequencing data.
+A comprehensive RNA-seq analysis pipeline built with Snakemake that supports multiple data types including paired-end, single-end, and nanopore sequencing data.
 
 ## Features
 
@@ -191,9 +191,9 @@ Each download touches a `.download_complete` file to signal that the FASTQ files
 
 ### Quality Control Steps
 
-| Step | Paired/Single | Interleaved | Nanopore |
-|------|---------------|-------------|----------|
-| File splitting | No | ✅ Yes | No |
+| Step | Paired | Single | Nanopore |
+|------|--------|--------|----------|
+| File splitting | No | No | No |
 | fastp filtering | ✅ Yes | ✅ Yes | ❌ No |
 | Alignment tool | bowtie2 | bowtie2 | minimap2 |
 | Mark duplicates | ✅ Yes | ✅ Yes | ❌ No |
@@ -203,7 +203,7 @@ Each download touches a `.download_complete` file to signal that the FASTQ files
 
 ### Alignment Parameters
 
-**Illumina data (paired/single/interleaved):**
+**Illumina data (paired/single):**
 - Tool: bowtie2
 - Options: `--very-sensitive-local`
 - Read groups: Automatically added for Picard compatibility
