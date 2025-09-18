@@ -33,5 +33,5 @@ jobs:
             benchmark_dir="tests/test_counts/test_out/benchmarks" \
             genome_index="tests/test_counts/genome/random_genome" \
             gtf_file="tests/test_counts/genome/annotation.gtf" \
-            samples_csv="test_samples_locals.csv" \
+            samples_csv="test_samples_local.csv" \
             cleanup_processing='True'
