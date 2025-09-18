@@ -41,7 +41,7 @@ Results & Cleanup
 ```
 
 ### Data Type Processing:
-- **Paired/Single/Interleaved**: Full pipeline with bowtie2
+- **Paired/Single/Nanopore**: Full pipeline with bowtie2
 - **Nanopore**: Direct minimap2 alignment, skips QC/duplicate steps
 
 ## Supported Data Types
@@ -58,14 +58,7 @@ Results & Cleanup
 - **Required fields**: `file_path_1` only
 - **Processing**: Quality filtering with fastp → Alignment with bowtie2 → Standard QC
 
-### 3. Interleaved Paired-end Data
-- **read_type**: `interleaved`
-- **Description**: Paired-end data stored in a single file with alternating R1/R2 reads
-- **Required fields**: `file_path_1` (interleaved file)
-- **Processing**: File splitting → Quality filtering with fastp → Alignment with bowtie2 → Standard QC
-- **Note**: The pipeline automatically splits interleaved files into separate R1/R2 files before processing
-
-### 4. Nanopore Long-read Data
+### 3. Nanopore Long-read Data
 - **read_type**: `nanopore`
 - **Description**: Oxford Nanopore long-read sequencing data
 - **Required fields**: `file_path_1` only
