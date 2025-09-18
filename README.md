@@ -90,7 +90,6 @@ Create a `samples.csv` file with your sample information:
 sample_name,read_type,source_type,file_path_1,file_path_2,checksum_1,checksum_2,run_tag
 sample1,paired,local,/data/sample1_R1.fastq.gz,/data/sample1_R2.fastq.gz,abc123,def456,experiment_A
 sample2,single,ftp,ftp://server.com/sample2.fastq.gz,,xyz789,,experiment_B
-sample3,interleaved,local,/data/sample3_interleaved.fastq.gz,,mno345,,experiment_A
 sample4,nanopore,local,/data/sample4_nanopore.fastq.gz,,pqr678,,long_read_set
 ```
 
