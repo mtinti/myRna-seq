@@ -1,4 +1,4 @@
-name: Snakemake Test - FTP and Local Server
+name: Snakemake Test - FTP Server and Local 
 
 on:
   push:
