@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
+      
       - name: Install Miniforge and Snakemake
         shell: bash -l {0}
         run: |
@@ -21,6 +21,20 @@ jobs:
           conda activate
           conda create -y -c conda-forge -c bioconda -n snakemake snakemake
           conda activate snakemake
+
+      - name: Install pyftpdlib and start FTP server
+        shell: bash -l {0}
+        run: |
+          pip install pyftpdlib
+          cd tests/test_counts/reads/
+          # Start FTP server in background
+          python ftp_server.py &
+          # Store the PID for later cleanup
+          echo $! > /tmp/ftp_server.pid
+          # Give the server a moment to start
+          sleep 2
+          # Verify server is running
+          ps -p $(cat /tmp/ftp_server.pid) || echo "FTP server may not have started properly"
 
       - name: Run Snakemake dry-run test
         shell: bash -l {0}
@@ -33,11 +47,10 @@ jobs:
             benchmark_dir="tests/test_counts/test_out/benchmarks" \
             genome_index="tests/test_counts/genome/random_genome" \
             gtf_file="tests/test_counts/genome/annotation.gtf" \
-            samples_csv="test_samples_local.csv" \
+            samples_csv="test_samples.csv" \
             cleanup_processing='True'
 
-            
-      - name: Run Snakemake test
+      - name: Run Snakemake test with FTP
         shell: bash -l {0}
         run: |
           source "${HOME}/conda/etc/profile.d/conda.sh"
@@ -48,7 +61,18 @@ jobs:
             benchmark_dir="tests/test_counts/test_out/benchmarks" \
             genome_index="tests/test_counts/genome/random_genome" \
             gtf_file="tests/test_counts/genome/annotation.gtf" \
-            samples_csv="test_samples_local.csv" \
+            samples_csv="test_samples.csv" \
             cleanup_processing='True'
           ls tests/test_counts/test_out/results -l
           head tests/test_counts/test_out/results/SAMPLE_02/SAMPLE_02_counts_single_all.txt
+
+      - name: Cleanup FTP server
+        shell: bash -l {0}
+        run: |
+          # Kill the FTP server process
+          if [ -f /tmp/ftp_server.pid ]; then
+            kill $(cat /tmp/ftp_server.pid) || echo "FTP server process may have already stopped"
+            rm /tmp/ftp_server.pid
+          fi
+        # Always run cleanup, even if previous steps fail
+        if: always()
