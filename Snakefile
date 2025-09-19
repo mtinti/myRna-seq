@@ -257,15 +257,14 @@ workflow_steps = [
     "01 - Input Handling",
     "02 - Checksum Verification",
     "03 - Quality Filtering",
-    "04 - Interleaved File Splitting",
-    "05 - Genome Alignment", 
-    "06 - BAM Merging by Run Tag",
-    "07 - Mark Duplicates",
-    "08 - BAM Quality Control",
-    "09 - Coverage Tracks",
-    "10 - Feature Counting",
-    "11 - Benchmark Analysis",
-    "12 - Copy Results"
+    "04 - Genome Alignment",
+    "05 - BAM Merging by Run Tag",
+    "06 - Mark Duplicates",
+    "07 - BAM Quality Control",
+    "08 - Coverage Tracks",
+    "09 - Feature Counting",
+    "10 - Benchmark Analysis",
+    "11 - Copy Results"
 ]
 
 onsuccess:

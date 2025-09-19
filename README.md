@@ -191,9 +191,8 @@ Each download touches a `.download_complete` file to signal that the FASTQ files
 
 ### Quality Control Steps
 
-| Step | Paired/Single | Interleaved | Nanopore |
-|------|---------------|-------------|----------|
-| File splitting | No | ✅ Yes | No |
+| Step | Paired | Single | Nanopore |
+|------|--------|--------|----------|
 | fastp filtering | ✅ Yes | ✅ Yes | ❌ No |
 | Alignment tool | bowtie2 | bowtie2 | minimap2 |
 | Mark duplicates | ✅ Yes | ✅ Yes | ❌ No |
