@@ -151,7 +151,7 @@ def load_samples(config):
             raise ValueError(error_msg)        
         
         # Validate read_type values
-        valid_read_types = ['single', 'paired', 'interleaved', 'nanopore']
+        valid_read_types = ['single', 'paired', 'nanopore']
         invalid_read_types = samples_df[~samples_df['read_type'].isin(valid_read_types)]['read_type'].unique()
         
         if len(invalid_read_types) > 0:
@@ -177,7 +177,7 @@ def load_samples(config):
                     if pd.isna(row.get('file_path_1', None)) or pd.isna(row.get('file_path_2', None)):
                         print(f"Error: Missing file_path_1 or file_path_2 for paired-end sample {row['sample_name']}")
                         raise ValueError(f"Missing file_path_1 or file_path_2 for paired-end sample {row['sample_name']}")
-            else:  # single-end, interleaved, or nanopore
+            else:  # single-end or nanopore
                 if pd.isna(row.get('file_path_1', None)):
                     print(f"Error: Missing file_path_1 for {row['read_type']} sample {row['sample_name']}")
                     raise ValueError(f"Missing file_path_1 for {row['read_type']} sample {row['sample_name']}")
@@ -297,8 +297,8 @@ def is_sample_completed(config, sample, samples_df):
         # Check for final results
         final_results_exist = True
         
-        # For paired-end and interleaved samples (after splitting)
-        if samples_df.loc[sample, 'read_type'] in ['paired', 'interleaved']:
+        # For paired-end samples
+        if samples_df.loc[sample, 'read_type'] == 'paired':
             # Check if counts files exist
             paired_counts_all = os.path.join(config['results_dir'], effective_name, f"{effective_name}_counts_paired_all.txt")
             paired_counts_unique = os.path.join(config['results_dir'], effective_name, f"{effective_name}_counts_paired_unique.txt")
