@@ -1,12 +1,12 @@
 # RNA-seq Pipeline Configuration - Modular Implementation
 
 # Core directories
-processing_dir: "tests/test_counts/new_branch/processing"
-results_dir: "tests/test_counts/new_branch/results"
-benchmark_dir: "tests/test_counts/new_branch/benchmarks"
+processing_dir: "tests/test_counts/processing"
+results_dir: "tests/test_counts/results"
+benchmark_dir: "tests/test_counts/benchmarks"
 
 # Sample information
-samples_csv: "test_samples_counts.csv"
+samples_csv: "test_samples_long.csv"
 selected_samples: []  # Empty list means all samples are processed
 
 # Reference genome
