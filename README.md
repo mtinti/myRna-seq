@@ -123,9 +123,6 @@ snakemake -n
 # Run the pipeline
 snakemake --cores 8
 
-# Run with Singularity container
-snakemake --cores 8 --use-singularity
-
 ### Running the pipeline with the provided Singularity container
 
 If you prefer to run the workflow with Singularity rather than Conda, you can
@@ -134,7 +131,6 @@ Snakemake:
 
 ```bash
 # A Docker container is available at docker://mtinti/rna_seq:latest
-docker pull mtinti/rna_seq:latest
 
 # Create the Singularity image from the Docker registry
 singularity pull rna_seq.sif docker://mtinti/rna_seq:latest
@@ -159,7 +155,7 @@ available in the companion repository:
 You can test the pipeline with the included test dataset:
 
 ```bash
-snakemake --cores 10 --use-singularity --config \
+snakemake --cores 10 --config \
 processing_dir="tests/test_counts/new_branch/processing" \
 results_dir="tests/test_counts/new_branch/results" \
 benchmark_dir="tests/test_counts/new_branch/benchmarks" \
