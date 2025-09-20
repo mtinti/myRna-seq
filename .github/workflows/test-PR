@@ -1,0 +1,79 @@
+name: Pull Request Tests
+
+on:
+  pull_request:
+    # This catches PRs from ANY source branch targeting these branches
+    branches: ["main"]
+    types: [opened, synchronize, reopened]
+
+name: PR - Full Test Suite
+
+jobs:
+  comprehensive-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Python for FTP server
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      
+      - name: Install pyftpdlib and start FTP server
+        run: |
+          pip install pyftpdlib
+          cd tests/test_counts/reads/
+          python ftp_server.py &
+          echo $! > $GITHUB_WORKSPACE/ftp_server.pid
+          sleep 3
+          curl ftp://localhost:21/ || echo "FTP server connection test failed"
+          echo "FTP server started with PID: $(cat $GITHUB_WORKSPACE/ftp_server.pid)"
+       
+      - name: Install Miniforge and Snakemake
+        shell: bash -l {0}
+        run: |
+          wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
+          bash Miniforge3.sh -b -p "${HOME}/conda"
+          source "${HOME}/conda/etc/profile.d/conda.sh"
+          source "${HOME}/conda/etc/profile.d/mamba.sh"
+          conda activate
+          conda create -y -c conda-forge -c bioconda -n snakemake snakemake
+          conda activate snakemake
+
+      - name: Run comprehensive tests (main branch)
+        shell: bash -l {0}
+        run: |
+          source "${HOME}/conda/etc/profile.d/conda.sh"
+          conda activate snakemake
+          
+          echo "Running dry-run test..."
+          snakemake --cores 10 --use-conda --dry-run --config \
+            processing_dir="tests/test_counts/test_out/processing" \
+            results_dir="tests/test_counts/test_out/results" \
+            benchmark_dir="tests/test_counts/test_out/benchmarks" \
+            genome_index="tests/test_counts/genome/random_genome" \
+            gtf_file="tests/test_counts/genome/annotation.gtf" \
+            samples_csv="test_samples.csv" \
+            cleanup_processing='True'
+          
+          echo "Running full test with FTP..."
+          snakemake --cores 10 --use-conda --config \
+            processing_dir="tests/test_counts/test_out/processing" \
+            results_dir="tests/test_counts/test_out/results" \
+            benchmark_dir="tests/test_counts/test_out/benchmarks" \
+            genome_index="tests/test_counts/genome/random_genome" \
+            gtf_file="tests/test_counts/genome/annotation.gtf" \
+            samples_csv="test_samples.csv" \
+            cleanup_processing='True'
+          
+          ls tests/test_counts/test_out/results -l
+          head tests/test_counts/test_out/results/SAMPLE_02/SAMPLE_02_counts_single_all.txt
+
+      - name: Stop FTP server
+        if: always()
+        run: |
+          if [ -f $GITHUB_WORKSPACE/ftp_server.pid ]; then
+            echo "Stopping FTP server with PID: $(cat $GITHUB_WORKSPACE/ftp_server.pid)"
+            kill $(cat $GITHUB_WORKSPACE/ftp_server.pid) || echo "FTP server already stopped"
+            rm $GITHUB_WORKSPACE/ftp_server.pid
+          fi
