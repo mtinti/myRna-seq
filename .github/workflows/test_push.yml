@@ -1,4 +1,4 @@
-name: Main Branch - Full Test Suite
+name: Main Branch - Push
 
 # This workflow ONLY runs when pushing to main branch
 on:
