@@ -2,6 +2,8 @@
 
 A comprehensive RNA-seq analysis pipeline built with Snakemake that supports multiple data types including paired-end, single-end, and nanopore sequencing data.
 
+This workflow powered the [Meta-Analysis of VSG Expression](https://vsgs-web-server.pages.dev/) reanalyzing 454 RNA-seq runs (168 single-end, 280 paired-end, and 6 nanopore datasets) from 31 publications, spanning 35 experimental factors across 78 experiments.
+
 ## Features
 
 - **Multi-format support**: Paired-end, single-end and nanopore data
