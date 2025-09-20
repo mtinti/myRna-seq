@@ -57,7 +57,7 @@ cleanup_processing: False  # Whether to remove processing directory after result
 
 # Resource limits
 max_resources:
-  network: 3    # Maximum concurrent FTP downloads
+  network: 2    # Maximum concurrent FTP downloads
   io: 1000      # Maximum concurrent IO operations 
 
 
