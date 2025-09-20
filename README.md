@@ -79,7 +79,7 @@ git clone <repository-url>
 cd rna-seq-pipeline
 
 # Install Snakemake (if not already installed)
-conda install -c conda-forge -c bioconda snakemake
+conda install -c conda-forge -c bioconda snakemake==9.1.9
 ```
 
 ### 2. Prepare your sample sheet
