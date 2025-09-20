@@ -117,8 +117,8 @@ for sample in SAMPLES:
 PAIRED_LOCAL_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] == 'paired') and (SAMPLES_DF.loc[s, 'source_type'] == 'local')]
 PAIRED_FTP_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] == 'paired') and (SAMPLES_DF.loc[s, 'source_type'] == 'ftp')]
 SRA_PAIRED_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] == 'paired') and (SAMPLES_DF.loc[s, 'source_type'] == 'sra_paired')]
-SINGLE_LOCAL_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] in ['single', 'interleaved']) and (SAMPLES_DF.loc[s, 'source_type'] == 'local')]
-SINGLE_FTP_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] in ['single', 'interleaved']) and (SAMPLES_DF.loc[s, 'source_type'] == 'ftp')]
+SINGLE_LOCAL_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] == 'single') and (SAMPLES_DF.loc[s, 'source_type'] == 'local')]
+SINGLE_FTP_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] == 'single') and (SAMPLES_DF.loc[s, 'source_type'] == 'ftp')]
 NANOPORE_LOCAL_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] == 'nanopore') and (SAMPLES_DF.loc[s, 'source_type'] == 'local')]
 NANOPORE_FTP_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] == 'nanopore') and (SAMPLES_DF.loc[s, 'source_type'] == 'ftp')]
 
@@ -126,8 +126,8 @@ NANOPORE_FTP_SAMPLES = [s for s in SAMPLES if (SAMPLES_DF.loc[s, 'read_type'] ==
 print(f"Paired-end, local samples: {len(PAIRED_LOCAL_SAMPLES)}")
 print(f"Paired-end, FTP samples: {len(PAIRED_FTP_SAMPLES)}")
 print(f"Paired-end, SRA samples: {len(SRA_PAIRED_SAMPLES)}")
-print(f"Single-end/Interleaved, local samples: {len(SINGLE_LOCAL_SAMPLES)}")
-print(f"Single-end/Interleaved, FTP samples: {len(SINGLE_FTP_SAMPLES)}")
+print(f"Single-end, local samples: {len(SINGLE_LOCAL_SAMPLES)}")
+print(f"Single-end, FTP samples: {len(SINGLE_FTP_SAMPLES)}")
 print(f"Nanopore, local samples: {len(NANOPORE_LOCAL_SAMPLES)}")
 print(f"Nanopore, FTP samples: {len(NANOPORE_FTP_SAMPLES)}")
 print(f"Run tags to process: {len(RUN_TAGS_TO_PROCESS)}")
@@ -190,20 +190,14 @@ if len(SINGLE_LOCAL_SAMPLES) + len(SINGLE_FTP_SAMPLES) + len(NANOPORE_LOCAL_SAMP
     include: "rules/checksum/single_checksum.smk"
 
 # Quality filtering rules
-if len(PAIRED_LOCAL_SAMPLES) + len(PAIRED_FTP_SAMPLES) + len(SRA_PAIRED_SAMPLES) + len([
-    s for s in SAMPLES if SAMPLES_DF.loc[s, 'read_type'] == 'interleaved'
-]) > 0:
+if len(PAIRED_LOCAL_SAMPLES) + len(PAIRED_FTP_SAMPLES) + len(SRA_PAIRED_SAMPLES) > 0:
     include: "rules/fastp/paired_fastp.smk"
 
 if len(SINGLE_LOCAL_SAMPLES) + len(SINGLE_FTP_SAMPLES) > 0:
     include: "rules/fastp/single_fastp.smk"
 
-# Interleaved file splitting rule
-if any(SAMPLES_DF.loc[s, 'read_type'] == 'interleaved' for s in SAMPLES):
-    include: "rules/fastp/split_interleaved.smk"
-
 # Alignment rules
-if len(PAIRED_LOCAL_SAMPLES) + len(PAIRED_FTP_SAMPLES) + len(SRA_PAIRED_SAMPLES) + len([s for s in SAMPLES if SAMPLES_DF.loc[s, 'read_type'] == 'interleaved']) > 0:
+if len(PAIRED_LOCAL_SAMPLES) + len(PAIRED_FTP_SAMPLES) + len(SRA_PAIRED_SAMPLES) > 0:
     include: "rules/alignment/paired_align.smk"
 
 if len([s for s in SINGLE_LOCAL_SAMPLES + SINGLE_FTP_SAMPLES if SAMPLES_DF.loc[s, 'read_type'] == 'single']) > 0:
@@ -222,21 +216,21 @@ if NON_NANOPORE_EFFECTIVE_SAMPLES:
 # QC rules
 include: "rules/qc/bam_qc.smk"
 
-if any((is_paired_end(run_tag) or is_interleaved(run_tag)) and not is_nanopore(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
+if any(is_paired_end(run_tag) and not is_nanopore(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
     include: "rules/qc/paired_rnaseq.smk"
 
 if any(is_single_end(run_tag) and not is_nanopore(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
     include: "rules/qc/single_rnaseq.smk"
 
 # Coverage track generation rules
-if any(is_paired_end(run_tag) or is_interleaved(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
+if any(is_paired_end(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
     include: "rules/coverage/paired_coverage.smk"
 
 if any(is_single_end(run_tag) or is_nanopore(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
     include: "rules/coverage/single_coverage.smk"
 
 # Feature counting rules
-if any(is_paired_end(run_tag) or is_interleaved(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
+if any(is_paired_end(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
     include: "rules/counting/paired_counts.smk"
 
 if any(is_single_end(run_tag) or is_nanopore(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
@@ -263,15 +257,14 @@ workflow_steps = [
     "01 - Input Handling",
     "02 - Checksum Verification",
     "03 - Quality Filtering",
-    "04 - Interleaved File Splitting",
-    "05 - Genome Alignment", 
-    "06 - BAM Merging by Run Tag",
-    "07 - Mark Duplicates",
-    "08 - BAM Quality Control",
-    "09 - Coverage Tracks",
-    "10 - Feature Counting",
-    "11 - Benchmark Analysis",
-    "12 - Copy Results"
+    "04 - Genome Alignment",
+    "05 - BAM Merging by Run Tag",
+    "06 - Mark Duplicates",
+    "07 - BAM Quality Control",
+    "08 - Coverage Tracks",
+    "09 - Feature Counting",
+    "10 - Benchmark Analysis",
+    "11 - Copy Results"
 ]
 
 onsuccess:

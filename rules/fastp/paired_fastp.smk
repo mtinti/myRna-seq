@@ -1,20 +1,14 @@
 """
-Rules for quality filtering with fastp for paired-end and split interleaved reads
+Rules for quality filtering with fastp for paired-end reads
 """
 import os
 
-def is_interleaved_sample(sample):
-    """Return True if the sample is marked as interleaved."""
-    return SAMPLES_DF.loc[sample, "read_type"] == "interleaved"
-
-# Rule for fastp processing of paired-end and split interleaved reads
+# Rule for fastp processing of paired-end reads
 rule fastp_paired_end:
     input:
         r1 = lambda wc: get_fastp_input(wc)["r1"],
         r2 = lambda wc: get_fastp_input(wc)["r2"],
-        checksums = lambda wc: [] if skip_md5_for_sra(wc) or is_interleaved_sample(wc.sample) else get_processing_path(f"{wc.sample}/checksums_paired_verified.flag")
-    params:
-        split_complete = lambda wc: get_processing_path(f"{wc.sample}/split_interleaved_complete.flag") if is_interleaved_sample(wc.sample) else ""
+        checksums = lambda wc: [] if skip_md5_for_sra(wc) else get_processing_path(f"{wc.sample}/checksums_paired_verified.flag")
     output:
         r1 = get_processing_path("{sample}/{sample}.1.cleaned.fastq.gz"),
         r2 = get_processing_path("{sample}/{sample}.2.cleaned.fastq.gz"),
@@ -40,18 +34,9 @@ rule fastp_paired_end:
         mkdir -p $(dirname {output.html})
         mkdir -p $(dirname {output.r1})
 
-        split_flag="{params.split_complete}"
-
-        # Determine input file type
-        if [[ -n "$split_flag" && -f "$split_flag" ]]; then
-            echo "Processing split interleaved files for {wildcards.sample}" > {log}
-            input_r1={input.r1}
-            input_r2={input.r2}
-        else
-            echo "Processing paired-end fastq files for {wildcards.sample}" > {log}
-            input_r1={input.r1}
-            input_r2={input.r2}
-        fi
+        echo "Processing paired-end fastq files for {wildcards.sample}" > {log}
+        input_r1={input.r1}
+        input_r2={input.r2}
         
         # Check if output files already exist and have content
         if [[ -s {output.r1} && -s {output.r2} && -s {output.html} && -s {output.json} ]]; then
@@ -76,12 +61,7 @@ rule fastp_paired_end:
         fi
         
         # Create flag file to indicate completion
-        if [[ -n "$split_flag" && -f "$split_flag" ]]; then
-            sample_type="split interleaved"
-        else
-            sample_type="paired-end"
-        fi
-        echo "Fastp processing complete for $sample_type sample {wildcards.sample}" > {output.flag}
+        echo "Fastp processing complete for paired-end sample {wildcards.sample}" > {output.flag}
         echo "Timestamp: $(date)" >> {output.flag}
         echo "Files processed:" >> {output.flag}
         echo "- Input R1: $input_r1" >> {output.flag}
