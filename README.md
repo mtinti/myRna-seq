@@ -1,6 +1,6 @@
 # RNA-seq Snakemake Pipeline
 
-A comprehensive RNA-seq analysis pipeline built with Snakemake that supports multiple data types including paired-end, single-end, and nanopore sequencing data.
+A comprehensive RNA-seq analysis pipeline built with Snakemake that supports multiple data types including paired-end, single-end, and nanopore sequencing data. The workflow has powered analyses such as the [Meta-Analysis of VSG Expression](https://vsgs-web-server.pages.dev/), where we reanalyzed 454 RNA-seq runs (168 single-end, 280 paired-end, and 6 nanopore datasets) from 31 publications spanning 78 experiments across 35 experimental factors.
 
 ## Features
 
