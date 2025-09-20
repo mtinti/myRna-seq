@@ -7,7 +7,7 @@ on:
 
 
 jobs:
-  comprehensive-test:
+  snakemake-dry-run:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
