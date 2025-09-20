@@ -22,12 +22,13 @@ This workflow powered the [Meta-Analysis of VSG Expression](https://vsgs-web-ser
 Input Data
     ↓
 Acquisition & Checksum Verification
+(local / ftp)
     ↓
 Quality Filtering* (fastp)
     ↓
 Alignment (bowtie2/minimap2)
     ↓
-BAM Merging by Run Tag
+BAM Merging for technical replicates
     ↓
 Mark Duplicates* (Picard)
     ↓
