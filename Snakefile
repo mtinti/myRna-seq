@@ -133,6 +133,18 @@ print(f"Nanopore, FTP samples: {len(NANOPORE_FTP_SAMPLES)}")
 print(f"Run tags to process: {len(RUN_TAGS_TO_PROCESS)}")
 print(f"Effective samples to process: {len(EFFECTIVE_SAMPLES_TO_PROCESS)}")
 
+# Cache sample availability flags for conditional module includes
+HAS_LOCAL_PAIRED = bool(PAIRED_LOCAL_SAMPLES)
+HAS_FTP_PAIRED = bool(PAIRED_FTP_SAMPLES)
+HAS_SRA_PAIRED = bool(SRA_PAIRED_SAMPLES)
+HAS_SINGLE_LOCAL = bool(SINGLE_LOCAL_SAMPLES)
+HAS_SINGLE_FTP = bool(SINGLE_FTP_SAMPLES)
+HAS_NANOPORE_LOCAL = bool(NANOPORE_LOCAL_SAMPLES)
+HAS_NANOPORE_FTP = bool(NANOPORE_FTP_SAMPLES)
+HAS_SINGLE_SHORT = HAS_SINGLE_LOCAL or HAS_SINGLE_FTP
+HAS_NANOPORE = HAS_NANOPORE_LOCAL or HAS_NANOPORE_FTP
+HAS_REMOTE_PAIRED = HAS_FTP_PAIRED or HAS_SRA_PAIRED
+
 # Create a logger function that only prints at startup but not during DAG building
 verbose_logging_done = False
 
@@ -164,82 +176,61 @@ include: "rules/common.smk"
 
 # Determine which run tags are non-nanopore for certain steps
 NON_NANOPORE_EFFECTIVE_SAMPLES = [rt for rt in EFFECTIVE_SAMPLES_TO_PROCESS if not is_nanopore(rt)]
+HAS_NON_NANOPORE_EFFECTIVE = bool(NON_NANOPORE_EFFECTIVE_SAMPLES)
+HAS_PAIRED_EFFECTIVE = any(is_paired_end(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS)
+HAS_SINGLE_NON_NANO_EFFECTIVE = any(
+    is_single_end(run_tag) and not is_nanopore(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS
+)
+HAS_SINGLE_OR_NANO_EFFECTIVE = any(
+    is_single_end(run_tag) or is_nanopore(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS
+)
+HAS_PAIRED_NON_NANO_EFFECTIVE = any(
+    is_paired_end(run_tag) and not is_nanopore(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS
+)
 
-# Conditionally include rules based on sample types
-# Acquisition rules
-if PAIRED_LOCAL_SAMPLES:
-    include: "rules/acquisition/local_paired.smk"
+# Conditionally include rules based on sample types using cached predicates
+conditional_modules = [
+    ("rules/acquisition/local_paired.smk", HAS_LOCAL_PAIRED),
+    ("rules/acquisition/ftp_paired.smk", HAS_FTP_PAIRED),
+    ("rules/acquisition/sra_paired.smk", HAS_SRA_PAIRED),
+    (
+        "rules/acquisition/local_single.smk",
+        HAS_SINGLE_LOCAL or HAS_NANOPORE_LOCAL,
+    ),
+    (
+        "rules/acquisition/ftp_single.smk",
+        HAS_SINGLE_FTP or HAS_NANOPORE_FTP,
+    ),
+    ("rules/checksum/paired_checksum.smk", HAS_LOCAL_PAIRED or HAS_FTP_PAIRED),
+    ("rules/checksum/single_checksum.smk", HAS_SINGLE_SHORT or HAS_NANOPORE),
+    (
+        "rules/fastp/paired_fastp.smk",
+        HAS_LOCAL_PAIRED or HAS_REMOTE_PAIRED,
+    ),
+    ("rules/fastp/single_fastp.smk", HAS_SINGLE_SHORT),
+    (
+        "rules/alignment/paired_align.smk",
+        HAS_LOCAL_PAIRED or HAS_REMOTE_PAIRED,
+    ),
+    ("rules/alignment/single_align.smk", HAS_SINGLE_SHORT),
+    ("rules/alignment/nanopore_align.smk", HAS_NANOPORE),
+    ("rules/processing/mark_duplicates.smk", HAS_NON_NANOPORE_EFFECTIVE),
+    ("rules/qc/paired_rnaseq.smk", HAS_PAIRED_NON_NANO_EFFECTIVE),
+    ("rules/qc/single_rnaseq.smk", HAS_SINGLE_NON_NANO_EFFECTIVE),
+    ("rules/coverage/paired_coverage.smk", HAS_PAIRED_EFFECTIVE),
+    ("rules/coverage/single_coverage.smk", HAS_SINGLE_OR_NANO_EFFECTIVE),
+    ("rules/counting/paired_counts.smk", HAS_PAIRED_EFFECTIVE),
+    ("rules/counting/single_counts.smk", HAS_SINGLE_OR_NANO_EFFECTIVE),
+]
 
-if PAIRED_FTP_SAMPLES:
-    include: "rules/acquisition/ftp_paired.smk"
+for module, should_include in conditional_modules:
+    if should_include:
+        include: module
 
-if SRA_PAIRED_SAMPLES:
-    include: "rules/acquisition/sra_paired.smk"
-
-if len(SINGLE_LOCAL_SAMPLES) + len(NANOPORE_LOCAL_SAMPLES) > 0:
-    include: "rules/acquisition/local_single.smk"
-
-if len(SINGLE_FTP_SAMPLES) + len(NANOPORE_FTP_SAMPLES) > 0:
-    include: "rules/acquisition/ftp_single.smk"
-
-# Checksum verification rules
-if len(PAIRED_LOCAL_SAMPLES) + len(PAIRED_FTP_SAMPLES) > 0:
-    include: "rules/checksum/paired_checksum.smk"
-
-if len(SINGLE_LOCAL_SAMPLES) + len(SINGLE_FTP_SAMPLES) + len(NANOPORE_LOCAL_SAMPLES) + len(NANOPORE_FTP_SAMPLES) > 0:
-    include: "rules/checksum/single_checksum.smk"
-
-# Quality filtering rules
-if len(PAIRED_LOCAL_SAMPLES) + len(PAIRED_FTP_SAMPLES) + len(SRA_PAIRED_SAMPLES) > 0:
-    include: "rules/fastp/paired_fastp.smk"
-
-if len(SINGLE_LOCAL_SAMPLES) + len(SINGLE_FTP_SAMPLES) > 0:
-    include: "rules/fastp/single_fastp.smk"
-
-# Alignment rules
-if len(PAIRED_LOCAL_SAMPLES) + len(PAIRED_FTP_SAMPLES) + len(SRA_PAIRED_SAMPLES) > 0:
-    include: "rules/alignment/paired_align.smk"
-
-if len([s for s in SINGLE_LOCAL_SAMPLES + SINGLE_FTP_SAMPLES if SAMPLES_DF.loc[s, 'read_type'] == 'single']) > 0:
-    include: "rules/alignment/single_align.smk"
-
-if len(NANOPORE_LOCAL_SAMPLES) + len(NANOPORE_FTP_SAMPLES) > 0:
-    include: "rules/alignment/nanopore_align.smk"
-
-# BAM merging rule (new module)
+# Modules that are always required
 include: "rules/processing/merge_bams.smk"
-
-# Common processing rules
-if NON_NANOPORE_EFFECTIVE_SAMPLES:
-    include: "rules/processing/mark_duplicates.smk"
-
-# QC rules
 include: "rules/qc/bam_qc.smk"
-
-if any(is_paired_end(run_tag) and not is_nanopore(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
-    include: "rules/qc/paired_rnaseq.smk"
-
-if any(is_single_end(run_tag) and not is_nanopore(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
-    include: "rules/qc/single_rnaseq.smk"
-
-# Coverage track generation rules
-if any(is_paired_end(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
-    include: "rules/coverage/paired_coverage.smk"
-
-if any(is_single_end(run_tag) or is_nanopore(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
-    include: "rules/coverage/single_coverage.smk"
-
-# Feature counting rules
-if any(is_paired_end(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
-    include: "rules/counting/paired_counts.smk"
-
-if any(is_single_end(run_tag) or is_nanopore(run_tag) for run_tag in EFFECTIVE_SAMPLES_TO_PROCESS):
-    include: "rules/counting/single_counts.smk"
-
-# Benchmarking rules
 include: "rules/benchmarks.smk"
-
-# Results handling rules
 include: "rules/results.smk"
 
 # Define target files outside the rule
