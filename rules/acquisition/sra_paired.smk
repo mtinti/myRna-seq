@@ -18,6 +18,8 @@ rule download_sra:
         tmpdir = lambda w: get_processing_path(f"{w.sample}/sra_tmp")
     log:
         get_processing_path("{sample}/logs/sra_download.log")
+    resources:
+        network=1
     threads: 8
     retries: 3
     conda:
