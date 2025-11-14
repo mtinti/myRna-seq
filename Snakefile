@@ -29,8 +29,32 @@ if 'results_dir' not in config or config['results_dir'] is None:
     config['results_dir'] = "results"
     print(f"Warning: results_dir not set in config, using default: {config['results_dir']}")
 
-if 'reference_fasta' not in config or config['reference_fasta'] is None:
-    raise ValueError("reference_fasta must be set in config.yaml")
+if 'reference_fasta' not in config or config['reference_fasta'] in (None, ""):
+    genome_index = config.get('genome_index')
+    if genome_index:
+        genome_index = os.path.expanduser(genome_index)
+        # If genome_index already points to a fasta file, use it directly. Otherwise try common FASTA extensions.
+        candidate_paths = []
+        base, ext = os.path.splitext(genome_index)
+        if ext.lower() in {'.fa', '.fasta', '.fna'}:
+            candidate_paths.append(genome_index)
+        else:
+            candidate_paths.extend([f"{genome_index}{suffix}" for suffix in ('.fa', '.fasta', '.fna')])
+
+        for candidate in candidate_paths:
+            if os.path.exists(candidate):
+                config['reference_fasta'] = candidate
+                print(
+                    "reference_fasta not provided; using FASTA derived from genome_index: "
+                    f"{config['reference_fasta']}"
+                )
+                break
+
+    if 'reference_fasta' not in config or config['reference_fasta'] in (None, ""):
+        raise ValueError(
+            "reference_fasta must be set in config.yaml or provided via --config. "
+            "For backwards compatibility, you can also supply genome_index pointing to the FASTA prefix."
+        )
 
 if 'gtf_file' not in config or config['gtf_file'] is None:
     raise ValueError("gtf_file must be set in config.yaml")

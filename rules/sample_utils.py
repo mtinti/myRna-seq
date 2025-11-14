@@ -20,8 +20,12 @@ def ensure_directories_exist(config):
 
 def copy_reference_files(config):
     """Copy reference FASTA and GTF files to the processing directory."""
-    src_fasta = config["reference_fasta"]
-    src_gtf_file = config["gtf_file"]
+    src_fasta = os.path.expanduser(config["reference_fasta"])
+    src_gtf_file = os.path.expanduser(config["gtf_file"])
+
+    # Persist expanded paths back into config so downstream rules use the resolved locations
+    config["reference_fasta"] = src_fasta
+    config["gtf_file"] = src_gtf_file
 
     target_dir = os.path.join(config["processing_dir"], "reference")
 
@@ -247,12 +251,13 @@ def load_samples(config):
 
 def validate_reference_inputs(config):
     """Validate that the reference FASTA and annotation files exist."""
-    fasta_path = config["reference_fasta"]
+    fasta_path = os.path.expanduser(config["reference_fasta"])
+    config["reference_fasta"] = fasta_path
     if not os.path.exists(fasta_path):
         raise FileNotFoundError(
             "ERROR: Reference FASTA not found at "
             f"{fasta_path}\n"
-            "Please check that the reference_fasta path in config.yaml is correct."
+            "Please check that the reference_fasta path (or genome_index prefix) in the configuration is correct."
         )
 
     if os.path.getsize(fasta_path) == 0:
@@ -262,7 +267,8 @@ def validate_reference_inputs(config):
             "Please provide a FASTA file with sequence data."
         )
 
-    gtf_path = config["gtf_file"]
+    gtf_path = os.path.expanduser(config["gtf_file"])
+    config["gtf_file"] = gtf_path
     if not os.path.exists(gtf_path):
         raise FileNotFoundError(
             "ERROR: GTF annotation not found at "
