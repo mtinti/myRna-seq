@@ -9,6 +9,29 @@ def get_processing_path(*args):
     """Get a path within the processing directory specified in config"""
     return os.path.join(config['processing_dir'], *args)
 
+# Reference helpers
+BOWTIE2_INDEX_SUFFIXES = [
+    ".1.bt2",
+    ".2.bt2",
+    ".3.bt2",
+    ".4.bt2",
+    ".rev.1.bt2",
+    ".rev.2.bt2",
+]
+
+
+def get_reference_fasta():
+    """Return the staged reference FASTA file within the processing directory."""
+    return config.get(
+        "processing_reference_fasta",
+        os.path.join(config['processing_dir'], 'reference', os.path.basename(config['reference_fasta']))
+    )
+
+
+def get_bowtie2_index_files():
+    """Return the expected Bowtie2 index files within the processing directory."""
+    return [f"{config['processing_genome_index']}{ext}" for ext in BOWTIE2_INDEX_SUFFIXES]
+
 # Helper function to get results directory path
 def get_results_path(*args):
     """Get a path within the results directory specified in config"""

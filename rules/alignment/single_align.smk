@@ -11,7 +11,8 @@ rule align_single_end:
         sample = "|".join([re.escape(s) for s in SINGLE_LOCAL_SAMPLES + SINGLE_FTP_SAMPLES])
     input:
         r = get_cleaned_fastq_single,
-        fastp_flag = get_processing_path("{sample}/fastp_single_complete.flag")
+        fastp_flag = get_processing_path("{sample}/fastp_single_complete.flag"),
+        index = get_bowtie2_index_files()
     output:
         bam = get_processing_path("{sample}/{sample}.bam"),
         bai = get_processing_path("{sample}/{sample}.bam.bai"),
@@ -60,8 +61,8 @@ rule align_single_end:
         # Check if genome index exists
         if [[ ! -f {params.genome_index}.1.bt2 && ! -f {params.genome_index}.1.bt2l ]]; then
             echo "ERROR: Genome index files not found at {params.genome_index}" >> {log}
-            echo "Please check that the genome_index path in config.yaml is correct" >> {log}
-            echo "and that the index files are accessible from the Singularity container." >> {log}
+            echo "Please ensure the reference_fasta path in config.yaml is correct" >> {log}
+            echo "and that the Bowtie2 index build step completed successfully." >> {log}
             exit 1
         fi
         

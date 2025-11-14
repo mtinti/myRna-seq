@@ -10,10 +10,10 @@ from snakemake.workflow import workflow
 # Import utility functions from lib directory
 sys.path.insert(0, os.path.join(os.path.dirname(workflow.snakefile), "rules"))
 from sample_utils import (
-    ensure_directories_exist, 
-    copy_reference_files, 
-    load_samples, 
-    validate_genome_index,
+    ensure_directories_exist,
+    copy_reference_files,
+    load_samples,
+    validate_reference_inputs,
     is_sample_completed
 )
 
@@ -29,8 +29,8 @@ if 'results_dir' not in config or config['results_dir'] is None:
     config['results_dir'] = "results"
     print(f"Warning: results_dir not set in config, using default: {config['results_dir']}")
 
-if 'genome_index' not in config or config['genome_index'] is None:
-    raise ValueError("genome_index must be set in config.yaml")
+if 'reference_fasta' not in config or config['reference_fasta'] is None:
+    raise ValueError("reference_fasta must be set in config.yaml")
 
 if 'gtf_file' not in config or config['gtf_file'] is None:
     raise ValueError("gtf_file must be set in config.yaml")
@@ -56,9 +56,9 @@ for key, value in config.items():
         else:
             print(f"Warning: Environment variable '{env_var}' not found. Using '{value}' as literal value.")
 
-# Validate reference genome index
+# Validate reference inputs
 try:
-    validate_genome_index(config)
+    validate_reference_inputs(config)
 except FileNotFoundError as e:
     print(e)
     sys.exit(1)  # Exit with an error code
@@ -80,9 +80,14 @@ except Exception as e:
     print(f"Error during initialization: {str(e)}")
     # Set default paths if there was an error
     if "processing_genome_index" not in config:
-        config["processing_genome_index"] = os.path.join(config['processing_dir'], 'reference', os.path.basename(config["genome_index"]))
+        fasta_name = os.path.splitext(os.path.basename(config["reference_fasta"]))[0]
+        config["processing_genome_index"] = os.path.join(config['processing_dir'], 'reference', fasta_name)
     if "processing_gtf_file" not in config:
         config["processing_gtf_file"] = os.path.join(config['processing_dir'], 'reference', os.path.basename(config["gtf_file"]))
+    if "processing_reference_fasta" not in config:
+        config["processing_reference_fasta"] = os.path.join(
+            config['processing_dir'], 'reference', os.path.basename(config["reference_fasta"]) or "reference.fa"
+        )
 
 # Load sample data - this must happen before rule parsing
 SAMPLES_DF, RUN_TAG_SAMPLES, RUN_TAGS, EFFECTIVE_SAMPLES = load_samples(config)
@@ -173,6 +178,9 @@ onstart:
 
 # Include common functions
 include: "rules/common.smk"
+
+# Build Bowtie2 indexes from the staged reference FASTA
+include: "rules/processing/build_bowtie_index.smk"
 
 # Determine which run tags are non-nanopore for certain steps
 NON_NANOPORE_EFFECTIVE_SAMPLES = [rt for rt in EFFECTIVE_SAMPLES_TO_PROCESS if not is_nanopore(rt)]

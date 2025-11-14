@@ -13,7 +13,7 @@ snakemake --cores 10 --use-singularity --keep-going --config \
 processing_dir="tests/test_counts/test_out/processing" \
 results_dir="tests/test_counts/test_out/results" \
 benchmark_dir="tests/test_counts/test_out/benchmarks" \
-genome_index="tests/test_counts/genome/random_genome" \
+reference_fasta="tests/test_counts/genome/random_genome.fa" \
 gtf_file="tests/test_counts/genome/annotation.gtf" \
 samples_csv="test_samples.csv" \
 cleanup_processing='True'

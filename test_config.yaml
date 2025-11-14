@@ -10,7 +10,7 @@ samples_csv: "test_samples_long.csv"
 selected_samples: []  # Empty list means all samples are processed
 
 # Reference genome
-genome_index: "tests/test_counts/genome/random_genome"
+reference_fasta: "tests/test_counts/genome/random_genome.fa"  # Bowtie2 index is built automatically from this FASTA
 gtf_file: "tests/test_counts/genome/annotation.gtf"  # GTF file for gene annotations
 
 singularity_image: "/cluster/majf_lab/mtinti/rna_seq.sif"

@@ -24,6 +24,7 @@ rule align_nanopore:
     params:
         preset = config.get("nanopore_preset", "map-ont"),
         genome_index = config["processing_genome_index"],
+        reference_fasta = get_reference_fasta(),
         rg_id = lambda wc: wc.sample,
         rg_sm = lambda wc: wc.sample,
         rg_lb = lambda wc: f"{wc.sample}_lib",
@@ -50,10 +51,10 @@ rule align_nanopore:
         echo "Aligning nanopore reads for {wildcards.sample}" > {log}
         echo "Input FASTQ: {input.r}" >> {log}
         echo "Using preset: {params.preset}" >> {log}
-        echo "Genome FASTA: {params.genome_index}.fa" >> {log}
+        echo "Genome FASTA: {params.reference_fasta}" >> {log}
 
         minimap2 -ax splice -uf -k14 -G 10000 -t 24 -t {threads} \
-            {params.genome_index}.fa {input.r} 2> {output.stats} | \
+            {params.reference_fasta} {input.r} 2> {output.stats} | \
             samtools view -bSu -@ {threads} | \
             samtools sort -@ {threads} -o {output.bam} >> {log} 2>&1
 

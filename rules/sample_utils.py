@@ -19,55 +19,37 @@ def ensure_directories_exist(config):
     print(f"Created directory structure at {config['processing_dir']} and {config['results_dir']}")
 
 def copy_reference_files(config):
-    """Copy reference genome index and GTF files to processing directory"""
-    # Get source paths from config
-    src_genome_index_base = config["genome_index"]
+    """Copy reference FASTA and GTF files to the processing directory."""
+    src_fasta = config["reference_fasta"]
     src_gtf_file = config["gtf_file"]
-    
-    # Define target paths
-    target_dir = os.path.join(config['processing_dir'], 'reference')
-    target_genome_base = os.path.join(target_dir, os.path.basename(src_genome_index_base))
+
+    target_dir = os.path.join(config["processing_dir"], "reference")
+
+    fasta_basename = os.path.basename(src_fasta)
+    fasta_stem, _ = os.path.splitext(fasta_basename)
+    if fasta_stem.endswith((".fa", ".fasta", ".fna")):
+        fasta_stem = os.path.splitext(fasta_stem)[0]
+    target_fasta = os.path.join(target_dir, fasta_basename)
+    target_genome_base = os.path.join(target_dir, fasta_stem)
     target_gtf_file = os.path.join(target_dir, os.path.basename(src_gtf_file))
-    
-    # Store the paths in config for use by other rules
+
+    config["processing_reference_fasta"] = target_fasta
     config["processing_genome_index"] = target_genome_base
     config["processing_gtf_file"] = target_gtf_file
-    
-    # Copy GTF file if it doesn't exist
+
+    if not os.path.exists(target_fasta):
+        print(f"Copying FASTA file from {src_fasta} to {target_fasta}")
+        try:
+            shutil.copy2(src_fasta, target_fasta)
+        except Exception as e:
+            print(f"Warning: Failed to copy FASTA file {src_fasta}: {e}")
+
     if not os.path.exists(target_gtf_file):
         print(f"Copying GTF file from {src_gtf_file} to {target_gtf_file}")
         try:
             shutil.copy2(src_gtf_file, target_gtf_file)
         except Exception as e:
             print(f"Warning: Failed to copy GTF file: {e}")
-    
-    # Copy all genome index files
-    # BT2 index files have extensions like .1.bt2, .2.bt2, etc.
-    index_extensions = [
-        '.1.bt2', '.2.bt2', '.3.bt2', '.4.bt2', '.rev.1.bt2', '.rev.2.bt2',
-        '.1.bt2l', '.2.bt2l', '.3.bt2l', '.4.bt2l', '.rev.1.bt2l', '.rev.2.bt2l'
-    ]
-    
-    for ext in index_extensions:
-        src_file = src_genome_index_base + ext
-        target_file = target_genome_base + ext
-        
-        if os.path.exists(src_file) and not os.path.exists(target_file):
-            print(f"Copying genome index file from {src_file} to {target_file}")
-            try:
-                shutil.copy2(src_file, target_file)
-            except Exception as e:
-                print(f"Warning: Failed to copy genome index file {src_file}: {e}")
-
-    # Copy reference FASTA file for tools like minimap2
-    src_fasta = src_genome_index_base + '.fa'
-    target_fasta = target_genome_base + '.fa'
-    if os.path.exists(src_fasta) and not os.path.exists(target_fasta):
-        print(f"Copying FASTA file from {src_fasta} to {target_fasta}")
-        try:
-            shutil.copy2(src_fasta, target_fasta)
-        except Exception as e:
-            print(f"Warning: Failed to copy FASTA file {src_fasta}: {e}")
 
 def create_sample_directories(config, sample_name):
     """Create the necessary directory structure for a specific sample"""
@@ -263,26 +245,32 @@ def load_samples(config):
         print("Creating empty DataFrame as fallback")
         return pd.DataFrame(columns=['read_type', 'source_type', 'file_path_1', 'file_path_2']).set_index(pd.Index([])), {}, [], []
 
-def validate_genome_index(config):
-    """Validate that the reference genome index files exist"""
-    index_base = config["genome_index"]
-    index_extensions = ['.1.bt2', '.2.bt2', '.3.bt2', '.4.bt2', '.rev.1.bt2', '.rev.2.bt2']
-    
-    # Check for at least one index file
-    found_any = False
-    for ext in index_extensions:
-        if os.path.exists(index_base + ext):
-            found_any = True
-            break
-    
-    if not found_any:
+def validate_reference_inputs(config):
+    """Validate that the reference FASTA and annotation files exist."""
+    fasta_path = config["reference_fasta"]
+    if not os.path.exists(fasta_path):
         raise FileNotFoundError(
-            f"ERROR: Genome index not found at {index_base}\n"
-            f"Please check that the genome_index path in config.yaml is correct.\n"
-            f"Expected to find files with extensions: {', '.join(index_extensions)}"
+            "ERROR: Reference FASTA not found at "
+            f"{fasta_path}\n"
+            "Please check that the reference_fasta path in config.yaml is correct."
         )
-    
-    print(f"Found genome index at {index_base}")
+
+    if os.path.getsize(fasta_path) == 0:
+        raise FileNotFoundError(
+            "ERROR: Reference FASTA is empty at "
+            f"{fasta_path}\n"
+            "Please provide a FASTA file with sequence data."
+        )
+
+    gtf_path = config["gtf_file"]
+    if not os.path.exists(gtf_path):
+        raise FileNotFoundError(
+            "ERROR: GTF annotation not found at "
+            f"{gtf_path}\n"
+            "Please check that the gtf_file path in config.yaml is correct."
+        )
+
+    print(f"Found reference FASTA at {fasta_path} and GTF at {gtf_path}")
 
 def is_sample_completed(config, sample, samples_df):
     """Check if a sample has already been processed"""
