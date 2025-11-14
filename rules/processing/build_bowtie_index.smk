@@ -2,13 +2,18 @@
 Rule for building Bowtie2 indexes from the staged reference FASTA.
 """
 
+import os
+
 rule build_bowtie2_index:
     input:
         fasta = get_reference_fasta
     output:
         get_bowtie2_index_files()
     params:
-        index_prefix = config["processing_genome_index"]
+        index_prefix = config["processing_genome_index"],
+        output_dir = os.path.dirname(get_bowtie2_index_files()[0]),
+        log_dir = os.path.dirname(get_processing_path("reference/logs/build_bowtie2_index.log")),
+        benchmark_dir = os.path.dirname(get_processing_path("reference/benchmarks/build_bowtie2_index.benchmark.txt")),
     log:
         get_processing_path("reference/logs/build_bowtie2_index.log")
     benchmark:
@@ -23,9 +28,9 @@ rule build_bowtie2_index:
         config.get("singularity_image", "")
     shell:
         """
-        mkdir -p $(dirname {log})
-        mkdir -p $(dirname {benchmark})
-        mkdir -p $(dirname {output[0]})
+        mkdir -p {params.log_dir}
+        mkdir -p {params.benchmark_dir}
+        mkdir -p {params.output_dir}
 
         echo "Building Bowtie2 index from {input.fasta}" > {log}
         echo "Index prefix: {params.index_prefix}" >> {log}
