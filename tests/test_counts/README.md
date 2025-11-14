@@ -17,3 +17,5 @@ reference_fasta="tests/test_counts/genome/random_genome.fa" \
 gtf_file="tests/test_counts/genome/annotation.gtf" \
 samples_csv="test_samples.csv" \
 cleanup_processing='True'
+
+Note: the reference FASTA must use the `.fa` extension.

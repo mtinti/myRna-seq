@@ -253,11 +253,16 @@ def validate_reference_inputs(config):
     """Validate that the reference FASTA and annotation files exist."""
     fasta_path = os.path.expanduser(config["reference_fasta"])
     config["reference_fasta"] = fasta_path
+    if not fasta_path.lower().endswith(".fa"):
+        raise ValueError(
+            "ERROR: Reference FASTA must have a .fa extension. "
+            f"Received: {config['reference_fasta']}"
+        )
     if not os.path.exists(fasta_path):
         raise FileNotFoundError(
             "ERROR: Reference FASTA not found at "
             f"{fasta_path}\n"
-            "Please check that the reference_fasta path (or genome_index prefix) in the configuration is correct."
+            "Please set reference_fasta to an existing .fa file (or provide genome_index without the .fa extension)."
         )
 
     if os.path.getsize(fasta_path) == 0:

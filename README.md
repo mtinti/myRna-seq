@@ -108,7 +108,7 @@ results_dir: "results"
 # Sample information
 samples_csv: "samples.csv"
 
-# Reference genome
+# Reference genome (FASTA must end with .fa)
 reference_fasta: "reference/genome/genome.fa"
 gtf_file: "reference/genome/annotation.gtf"
 
@@ -119,7 +119,8 @@ feature_type: "CDS"
 
 The workflow stages the FASTA inside the processing directory and builds the
 Bowtie2 index automatically, so you only need to provide the reference FASTA
-and annotation file.
+(with a `.fa` extension) and annotation file. The pipeline will exit with an
+error if the FASTA does not use the required `.fa` suffix.
 
 ### 4. Run the pipeline
 
@@ -170,6 +171,9 @@ reference_fasta="tests/test_counts/genome/random_genome.fa" \
 gtf_file="tests/test_counts/genome/annotation.gtf" \
 samples_csv="test_samples_local.csv"
 ```
+
+Make sure the FASTA you reference ends with `.fa`; other extensions will cause
+the workflow to abort during validation.
 
 Expected output from the test dataset:
 ```
@@ -256,7 +260,7 @@ results_dir: "results"
 samples_csv: "samples.csv"
 selected_samples: []  # Empty list means all samples are processed
 
-# Reference genome
+# Reference genome (FASTA must end with .fa)
 reference_fasta: "reference/genome/genome.fa"
 gtf_file: "reference/genome/annotation.gtf"
 

@@ -33,28 +33,28 @@ if 'reference_fasta' not in config or config['reference_fasta'] in (None, ""):
     genome_index = config.get('genome_index')
     if genome_index:
         genome_index = os.path.expanduser(genome_index)
-        # If genome_index already points to a fasta file, use it directly. Otherwise try common FASTA extensions.
-        candidate_paths = []
-        base, ext = os.path.splitext(genome_index)
-        if ext.lower() in {'.fa', '.fasta', '.fna'}:
-            candidate_paths.append(genome_index)
+        if genome_index.lower().endswith('.fa'):
+            derived_fasta = genome_index
         else:
-            candidate_paths.extend([f"{genome_index}{suffix}" for suffix in ('.fa', '.fasta', '.fna')])
+            derived_fasta = f"{genome_index}.fa"
 
-        for candidate in candidate_paths:
-            if os.path.exists(candidate):
-                config['reference_fasta'] = candidate
-                print(
-                    "reference_fasta not provided; using FASTA derived from genome_index: "
-                    f"{config['reference_fasta']}"
-                )
-                break
+        config['reference_fasta'] = derived_fasta
+        print(
+            "reference_fasta not provided; using FASTA derived from genome_index: "
+            f"{config['reference_fasta']}"
+        )
 
     if 'reference_fasta' not in config or config['reference_fasta'] in (None, ""):
         raise ValueError(
             "reference_fasta must be set in config.yaml or provided via --config. "
-            "For backwards compatibility, you can also supply genome_index pointing to the FASTA prefix."
+            "You may also supply genome_index pointing to the FASTA prefix (without the .fa extension)."
         )
+
+if not str(config['reference_fasta']).lower().endswith('.fa'):
+    raise ValueError(
+        "reference_fasta must point to a file ending in .fa. "
+        f"Received: {config['reference_fasta']}"
+    )
 
 if 'gtf_file' not in config or config['gtf_file'] is None:
     raise ValueError("gtf_file must be set in config.yaml")
@@ -83,7 +83,7 @@ for key, value in config.items():
 # Validate reference inputs
 try:
     validate_reference_inputs(config)
-except FileNotFoundError as e:
+except (FileNotFoundError, ValueError) as e:
     print(e)
     sys.exit(1)  # Exit with an error code
 

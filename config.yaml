@@ -10,7 +10,7 @@ benchmark_dir: "benchmarks"
 samples_csv: "samples_full.csv"
 selected_samples: []  # Empty list means all samples are processed
 
-# Reference genome
+# Reference genome (FASTA must end with .fa)
 reference_fasta: "reference/genome_427/tb427.fa"  # Bowtie2 index is built automatically from this FASTA
 gtf_file: "reference/genome_427/tb427.gtf"  # GTF file for gene annotations
 
