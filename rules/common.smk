@@ -20,8 +20,13 @@ BOWTIE2_INDEX_SUFFIXES = [
 ]
 
 
-def get_reference_fasta():
-    """Return the staged reference FASTA file within the processing directory."""
+def get_reference_fasta(wildcards=None):
+    """Return the staged reference FASTA file within the processing directory.
+
+    Snakemake input functions receive the current ``wildcards`` object as the
+    first positional argument. The parameter is optional so the helper can be
+    used in both rule definitions and regular Python code.
+    """
     return config.get(
         "processing_reference_fasta",
         os.path.join(config['processing_dir'], 'reference', os.path.basename(config['reference_fasta']))
