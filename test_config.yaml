@@ -1,9 +1,9 @@
 # RNA-seq Pipeline Configuration - Modular Implementation
 
 # Core directories
-processing_dir: "tests/test_counts/processing"
-results_dir: "tests/test_counts/results"
-benchmark_dir: "tests/test_counts/benchmarks"
+processing_dir: "tests/test_counts/test_out/processing"
+results_dir: "tests/test_counts/test_out/results"
+benchmark_dir: "tests/test_counts/test_out/benchmarks"
 
 # Sample information
 samples_csv: "test_samples_long.csv"
@@ -13,7 +13,6 @@ selected_samples: []  # Empty list means all samples are processed
 genome_index: "tests/test_counts/genome/random_genome"
 gtf_file: "tests/test_counts/genome/annotation.gtf"  # GTF file for gene annotations
 
-singularity_image: "/cluster/majf_lab/mtinti/rna_seq.sif"
 
 # Processing parameters - applies to both paired-end and single-end samples
 cores_align: 8
@@ -31,8 +30,6 @@ remove_duplicates: False  # Set to true to remove duplicates, false to only mark
 # QC parameters
 qualimap_memory: "10G"  # Memory allocation for Qualimap
 
-# Container images
-singularity_image: ""
 
 # Coverage track parameters
 coverage_bin_size: 50   # Bin size for bamCoverage
@@ -45,10 +42,10 @@ coverage_normalize: "RPKM"  # Normalization method (RPKM, CPM, BPM, RPGC, None)
 min_mapping_quality: 2  # Minimum mapping quality for unique reads
 
 # File handling preferences
-copy_fastq: False        # Whether to copy FASTQ files to results directory
-copy_bam: False          # Whether to copy BAM files to results directory
-copy_benchmarks: False    # Whether to copy benchmark files to results directory
-copy_logs: False      # Whether to copy log files to results directory
+copy_fastq: True        # Whether to copy FASTQ files to results directory
+copy_bam: True          # Whether to copy BAM files to results directory
+copy_benchmarks: True    # Whether to copy benchmark files to results directory
+copy_logs: True      # Whether to copy log files to results directory
 cleanup_processing: False  # Whether to remove processing directory after results are copied
 
 # Resource limits
