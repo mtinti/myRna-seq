@@ -11,7 +11,8 @@ def get_align_input(wildcards):
     return {
         'r1': get_processing_path(f"{wildcards.sample}/{wildcards.sample}.1.cleaned.fastq.gz"),
         'r2': get_processing_path(f"{wildcards.sample}/{wildcards.sample}.2.cleaned.fastq.gz"),
-        'fastp_flag': get_processing_path(f"{wildcards.sample}/fastp_paired_complete.flag")
+        'fastp_flag': get_processing_path(f"{wildcards.sample}/fastp_paired_complete.flag"),
+        'index': get_bowtie2_index_files(),
     }
 
 # Rule for aligning paired-end reads with bowtie2
@@ -76,8 +77,8 @@ rule align_paired_end:
         # Check if genome index exists
         if [[ ! -f {params.genome_index}.1.bt2 && ! -f {params.genome_index}.1.bt2l ]]; then
             echo "ERROR: Genome index files not found at {params.genome_index}" >> {log}
-            echo "Please check that the genome_index path in config.yaml is correct" >> {log}
-            echo "and that the index files are accessible from the Singularity container." >> {log}
+            echo "Please ensure the reference_fasta path in config.yaml is correct" >> {log}
+            echo "and that the Bowtie2 index build step completed successfully." >> {log}
             exit 1
         fi
         
