@@ -10,19 +10,10 @@ from pathlib import Path
 
 from sample_utils import validate_feature_attribute
 
-ANNOTATION_NEEDS_CONVERSION = config["processing_annotation_source"] != config["processing_gtf_file"]
-
-
-def _annotation_source(wildcards=None):
-    return config["processing_annotation_source"]
-
-
-def _annotation_gtf(wildcards=None):
-    return config["processing_gtf_file"]
-
-
-def _validation_flag(wildcards=None):
-    return os.path.join(config["processing_dir"], "reference", ".annotation_validated")
+ANNOTATION_SOURCE = config["processing_annotation_source"]
+ANNOTATION_GTF = config["processing_gtf_file"]
+VALIDATION_FLAG = os.path.join(config["processing_dir"], "reference", ".annotation_validated")
+ANNOTATION_NEEDS_CONVERSION = ANNOTATION_SOURCE != ANNOTATION_GTF
 
 
 def _validate(gtf_path, feature_type=None, attribute_type=None):
@@ -36,10 +27,10 @@ def _validate(gtf_path, feature_type=None, attribute_type=None):
 if ANNOTATION_NEEDS_CONVERSION:
     rule prepare_annotation:
         input:
-            source=_annotation_source,
+            source=ANNOTATION_SOURCE,
         output:
-            gtf=_annotation_gtf,
-            flag=_validation_flag,
+            gtf=ANNOTATION_GTF,
+            flag=VALIDATION_FLAG,
         params:
             feature_type=lambda wildcards: config.get("feature_type"),
             attribute_type=lambda wildcards: config.get("attribute_type"),
@@ -57,10 +48,10 @@ if ANNOTATION_NEEDS_CONVERSION:
 else:
     rule prepare_annotation:
         input:
-            gtf=_annotation_gtf,
+            gtf=ANNOTATION_GTF,
         output:
-            gtf=_annotation_gtf,
-            flag=_validation_flag,
+            gtf=ANNOTATION_GTF,
+            flag=VALIDATION_FLAG,
         params:
             feature_type=lambda wildcards: config.get("feature_type"),
             attribute_type=lambda wildcards: config.get("attribute_type"),
