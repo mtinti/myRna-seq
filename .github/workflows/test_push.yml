@@ -51,7 +51,7 @@ jobs:
             benchmark_dir="tests/test_counts/test_out/benchmarks" \
             reference_fasta="tests/test_counts/genome/random_genome.fa" \
             gtf_file="tests/test_counts/genome/annotation.gtf" \
-            samples_csv="test_samples_long.csv" \
+            samples_csv="test_samples_ftp_and_local.csv" \
             cleanup_processing='True' \
             cores_align=2 cores_coverage=2 cores_fastp=2 cores_featurecounts=2 \
             cores_flagstat=2 cores_nanopore_align=2 max_cores=2
