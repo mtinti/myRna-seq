@@ -138,6 +138,7 @@ snakemake -n
 
 # Run the pipeline
 snakemake --cores 8
+```
 
 ### Running the pipeline with the provided Singularity container
 
@@ -164,7 +165,6 @@ snakemake --use-singularity \
 Additional details about the container, including the software stack, are
 available in the companion repository:
 [mtinti/myRna-seq-docker](https://github.com/mtinti/myRna-seq-docker).
-```
 
 ## Testing the Pipeline
 
@@ -177,14 +177,13 @@ results_dir="tests/test_counts/new_branch/results" \
 benchmark_dir="tests/test_counts/new_branch/benchmarks" \
 reference_fasta="tests/test_counts/genome/random_genome.fa" \
 gtf_file="tests/test_counts/genome/annotation.gtf" \
-samples_csv="test_samples_local.csv"
-```
+samples_csv="test_samples_local.csv"```
 
 Make sure the FASTA you reference ends with `.fa`; other extensions will cause
 the workflow to abort during validation.
 
 Expected output from the test dataset:
-```
+
 Features
 ---------------------------
 gene1: 10 reads total
