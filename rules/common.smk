@@ -37,6 +37,11 @@ def get_bowtie2_index_files():
     """Return the expected Bowtie2 index files within the processing directory."""
     return [f"{config['processing_genome_index']}{ext}" for ext in BOWTIE2_INDEX_SUFFIXES]
 
+
+def get_annotation_gtf(wildcards=None):
+    """Return the staged annotation path used across the pipeline."""
+    return config["processing_gtf_file"]
+
 # Helper function to get results directory path
 def get_results_path(*args):
     """Get a path within the results directory specified in config"""
