@@ -50,7 +50,6 @@ else:
         input:
             gtf=ANNOTATION_GTF,
         output:
-            gtf=ANNOTATION_GTF,
             flag=VALIDATION_FLAG,
         params:
             feature_type=lambda wildcards: config.get("feature_type"),
