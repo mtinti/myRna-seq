@@ -1,8 +1,0 @@
-step	s	h:m:s	max_rss	max_vms	max_uss	max_pss	io_in	io_out	mean_load	cpu_time
-coverage_all	0.65	0:00:00	0	0	0	0	0.00	0.00	0.00	0
-coverage_unique	0.64	0:00:00	0	0	0	0	0.00	0.00	0.00	0
-featurecounts_paired_all	0.37	0:00:00	0	0	0	0	0.00	0.00	0.00	0
-featurecounts_paired_unique	0.25	0:00:00	0	0	0	0	0.00	0.00	0.00	0
-markduplicates	1.02	0:00:01	0	0	0	0	0.00	0.00	0.00	0
-qualimap_bamqc	4.50	0:00:04	0	0	0	0	0.00	0.00	25.69	0
-qualimap_rnaseq	2.99	0:00:02	0	0	0	0	0.00	0.00	24.54	0

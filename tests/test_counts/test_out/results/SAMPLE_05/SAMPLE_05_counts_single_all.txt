@@ -1,3 +1,0 @@
-# Program:featureCounts v2.1.1; Command:"featureCounts" "-C" "-O" "-M" "-T" "8" "-t" "CDS" "-g" "gene_id" "-a" "tests/test_counts/test_out/processing/reference/test.gtf" "-o" "tests/test_counts/test_out/processing/SAMPLE_05/SAMPLE_05_counts_single_all.txt" "tests/test_counts/test_out/processing/SAMPLE_05/SAMPLE_05.picard.bam" 
-Geneid	Chr	Start	End	Strand	Length	tests/test_counts/test_out/processing/SAMPLE_05/SAMPLE_05.picard.bam
-gene1	test_genome;test_genome;test_genome	11;2001;4001	500;2500;4500	-;-;-	1490	20
