@@ -9,13 +9,13 @@ rule qualimap_rnaseq_paired:
     input:
         bam = get_picard_bam,
         bai = lambda wildcards: f"{get_picard_bam(wildcards)}.bai",
-        bamqc_flag = get_processing_path("{run_tag}/bamqc_complete.flag")
+        bamqc_flag = get_processing_path("{run_tag}/bamqc_complete.flag"),
+        gtf = get_annotation_gtf
     output:
         dir = directory(get_processing_path("{run_tag}/qc/{run_tag}_qualimap_rnaseq/")),
         flag = get_processing_path("{run_tag}/qc_paired_complete.flag")
     params:
-        memory = config.get("qualimap_memory", "10G"),
-        gtf = config["processing_gtf_file"]
+        memory = config.get("qualimap_memory", "10G")
     log:
         stderr = get_processing_path("{run_tag}/logs/qualimap_rnaseq.log"),
         stdout = get_processing_path("{run_tag}/logs/qualimap_rnaseq.stdout.log")
@@ -36,20 +36,20 @@ rule qualimap_rnaseq_paired:
         # Log start
         echo "Running qualimap rnaseq (paired-end) on {wildcards.run_tag}" > {log.stderr}
         echo "Input BAM: {input.bam}" >> {log.stderr}
-        echo "GTF file: {params.gtf}" >> {log.stderr}
+        echo "GTF file: {input.gtf}" >> {log.stderr}
         echo "Output directory: {output.dir}" >> {log.stderr}
         echo "Java memory: {params.memory}" >> {log.stderr}
-        
+
         # Check if GTF file exists
-        if [[ ! -f {params.gtf} ]]; then
-            echo "ERROR: GTF file {params.gtf} not found" >> {log.stderr}
+        if [[ ! -f {input.gtf} ]]; then
+            echo "ERROR: GTF file {input.gtf} not found" >> {log.stderr}
             exit 1
         fi
-        
+
         # Run qualimap rnaseq with paired-end option
         qualimap rnaseq --java-mem-size={params.memory} \\
             -bam {input.bam} \\
-            -gtf {params.gtf} \\
+            -gtf {input.gtf} \\
             -outdir {output.dir} \\
             -outformat HTML \\
             -pe \\

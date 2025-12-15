@@ -1,0 +1,37 @@
+# Test configuration using GFF annotation to exercise conversion
+processing_dir: "tests/test_counts/test_out_gff/processing"
+results_dir: "tests/test_counts/test_out_gff/results"
+benchmark_dir: "tests/test_counts/test_out_gff/benchmarks"
+
+samples_csv: "test_samples_long.csv"
+selected_samples: []
+
+reference_fasta: "tests/test_counts/genome/random_genome.fa"
+gtf_file: "tests/test_counts/genome/test.gff"
+
+cores_align: 4
+cores_coverage: 4
+cores_flagstat: 4
+cores_featurecounts: 4
+cores_fastp: 4
+cores_default: 1
+max_cores: 4
+feature_type: "CDS"
+attribute_type: "gene_id"
+
+remove_duplicates: False
+qualimap_memory: "2G"
+
+coverage_bin_size: 50
+coverage_normalize: "RPKM"
+min_mapping_quality: 2
+
+copy_fastq: False
+copy_bam: False
+copy_benchmarks: False
+copy_logs: False
+cleanup_processing: False
+
+max_resources:
+  network: 2
+  io: 1000

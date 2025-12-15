@@ -1,0 +1,15 @@
+##gff-version 3
+##species http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=185431
+##sequence-region test_genome 1 5000
+test_genome	Prediction	protein_coding_gene	11	500	.	-	.	ID=gene1;description=test_desc gene1;ebi_biotype=protein_coding
+test_genome	Prediction	mRNA	11	500	.	-	.	ID=gene1:mRNA;Parent=gene1;description=test_desc gene1;gene_ebi_biotype=protein_coding
+test_genome	Prediction	exon	11	500	.	-	.	ID=exon_gene1:mRNA-E1;Parent=gene1:mRNA;gene_id=gene1
+test_genome	Prediction	CDS	11	500	.	-	0	ID=gene1:mRNA-p1-CDS1;Parent=gene1:mRNA;gene_id=gene1;protein_source_id=gene1:mRNA-p1
+test_genome	Prediction	protein_coding_gene	2001	2500	.	-	.	ID=gene2;description=test_desc gene2;ebi_biotype=protein_coding
+test_genome	Prediction	mRNA	2001	2500	.	-	.	ID=gene2:mRNA;Parent=gene1;description=test_desc gene2;gene_ebi_biotype=protein_coding
+test_genome	Prediction	exon	2001	2500	.	-	.	ID=exon_gene2:mRNA-E1;Parent=gene2:mRNA;gene_id=gene2
+test_genome	Prediction	CDS	2001	2500	.	-	0	ID=gene2:mRNA-p1-CDS1;Parent=gene2:mRNA;gene_id=gene2;protein_source_id=gene2:mRNA-p1
+test_genome	Prediction	protein_coding_gene	4001	4500	.	-	.	ID=gene3;description=test_desc gene3;ebi_biotype=protein_coding
+test_genome	Prediction	mRNA	4001	4500	.	-	.	ID=gene3:mRNA;Parent=gene1;description=test_desc gene3;gene_ebi_biotype=protein_coding
+test_genome	Prediction	exon	4001	4500	.	-	.	ID=exon_gene3:mRNA-E1;Parent=gene3:mRNA;gene_id=gene3
+test_genome	Prediction	CDS	4001	4500	.	-	0	ID=gene3:mRNA-p1-CDS1;Parent=gene3:mRNA;gene_id=gene3;protein_source_id=gene3:mRNA-p1

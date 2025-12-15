@@ -106,8 +106,22 @@ except Exception as e:
     if "processing_genome_index" not in config:
         fasta_name = os.path.splitext(os.path.basename(config["reference_fasta"]))[0]
         config["processing_genome_index"] = os.path.join(config['processing_dir'], 'reference', fasta_name)
+    if "processing_annotation_source" not in config:
+        config["processing_annotation_source"] = os.path.join(
+            config['processing_dir'], 'reference', os.path.basename(config["gtf_file"])
+        )
     if "processing_gtf_file" not in config:
-        config["processing_gtf_file"] = os.path.join(config['processing_dir'], 'reference', os.path.basename(config["gtf_file"]))
+        gtf_basename = os.path.basename(config["gtf_file"])
+        annotation_stem, annotation_ext = os.path.splitext(gtf_basename)
+        if annotation_stem.endswith(".gff"):
+            annotation_stem = os.path.splitext(annotation_stem)[0]
+        if annotation_ext.lower() in (".gff", ".gff3"):
+            derived_gtf = f"{annotation_stem}.gtf"
+        else:
+            derived_gtf = gtf_basename
+        config["processing_gtf_file"] = os.path.join(
+            config['processing_dir'], 'reference', derived_gtf
+        )
     if "processing_reference_fasta" not in config:
         config["processing_reference_fasta"] = os.path.join(
             config['processing_dir'], 'reference', os.path.basename(config["reference_fasta"]) or "reference.fa"
@@ -202,6 +216,9 @@ onstart:
 
 # Include common functions
 include: "rules/common.smk"
+
+# Prepare annotation for downstream steps (convert GFF->GTF, validate feature/attribute)
+include: "rules/processing/prepare_annotation.smk"
 
 # Build Bowtie2 indexes from the staged reference FASTA
 include: "rules/processing/build_bowtie_index.smk"
