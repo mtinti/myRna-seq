@@ -39,6 +39,7 @@ rule featurecounts_paired_all:
     params:
         gtf = config["processing_gtf_file"],
         feature_type = config["feature_type"],
+        attribute_type = config["attribute_type"],
         extra = "-p -B -C -M -O --countReadPairs"  # Paired-end specific options
         # -B requireBothEndsMapped
         # -p isPairedEnd
@@ -81,7 +82,7 @@ rule featurecounts_paired_all:
         featureCounts {params.extra} \\
             -T {threads} \\
             -t {params.feature_type} \\
-            -g gene_id \\
+            -g {params.attribute_type} \\
             -a {params.gtf} \\
             -o {output.counts} \\
             {input.bam} \\
@@ -121,7 +122,8 @@ rule featurecounts_paired_unique:
         flag = get_processing_path("{run_tag}/featurecounts_paired_complete.flag")
     params:
         gtf = config["processing_gtf_file"],
-        feature_type = config["feature_type"], 
+        feature_type = config["feature_type"],
+        attribute_type = config["attribute_type"],
         extra = "-p -B -C -O --countReadPairs",  # Paired-end specific options
         min_mapping_quality = config.get("min_mapping_quality", 2)
     log:
@@ -161,7 +163,7 @@ rule featurecounts_paired_unique:
         featureCounts {params.extra} \\
             -T {threads} \\
             -t {params.feature_type} \\
-            -g gene_id \\
+            -g {params.attribute_type} \\
             -Q {params.min_mapping_quality} \\
             -a {params.gtf} \\
             -o {output.counts} \\

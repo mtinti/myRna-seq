@@ -38,7 +38,8 @@ rule featurecounts_single_all:
         summary = get_processing_path("{run_tag}/qc/feature_counts/{run_tag}_counts_single_all.txt.summary")
     params:
         gtf = config["processing_gtf_file"],
-        feature_type = config["feature_type"], 
+        feature_type = config["feature_type"],
+        attribute_type = config["attribute_type"],
         extra = "-C -O -M"  # Single-end specific options (no -p, -B)
     log:
         get_processing_path("{run_tag}/logs/featurecounts_single_all.log")
@@ -76,7 +77,7 @@ rule featurecounts_single_all:
         featureCounts {params.extra} \\
             -T {threads} \\
             -t {params.feature_type} \\
-            -g gene_id \\
+            -g {params.attribute_type} \\
             -a {params.gtf} \\
             -o {output.counts} \\
             {input.bam} \\
@@ -117,6 +118,7 @@ rule featurecounts_single_unique:
     params:
         gtf = config["processing_gtf_file"],
         feature_type = config["feature_type"],
+        attribute_type = config["attribute_type"],
         extra = "-C -O",  # Single-end specific options (no -p, -B)
         min_mapping_quality = config.get("min_mapping_quality", 2)
     log:
@@ -156,7 +158,7 @@ rule featurecounts_single_unique:
         featureCounts {params.extra} \\
             -T {threads} \\
             -t {params.feature_type} \\
-            -g gene_id \\
+            -g {params.attribute_type} \\
             -Q {params.min_mapping_quality} \\
             -a {params.gtf} \\
             -o {output.counts} \\
