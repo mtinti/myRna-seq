@@ -122,6 +122,14 @@ Bowtie2 index automatically, so you only need to provide the reference FASTA
 (with a `.fa` extension) and annotation file. The pipeline will exit with an
 error if the FASTA does not use the required `.fa` suffix.
 
+**Annotation Format Support:**
+The pipeline accepts both GTF and GFF annotation files. When a GFF file is provided,
+it is implicitly converted to GTF format during processing. Users should ensure that
+the attributes and feature types specified in the configuration (e.g., `feature_type`,
+`attribute_type`) are present in the original file and will be preserved in the
+GFF-to-GTF conversion. This is particularly important for custom annotations or
+non-standard attribute names.
+
 ### 4. Run the pipeline
 
 ```bash
