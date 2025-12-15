@@ -53,19 +53,35 @@ def copy_reference_files(config):
     config["processing_annotation_source"] = target_annotation_source
     config["processing_gtf_file"] = target_gtf_file
 
+    # Copy FASTA if it doesn't exist or if source is newer
+    needs_fasta_copy = False
     if not os.path.exists(target_fasta):
+        needs_fasta_copy = True
+    elif os.path.getmtime(src_fasta) > os.path.getmtime(target_fasta):
+        needs_fasta_copy = True
+        print(f"Source FASTA is newer than cached copy, updating...")
+
+    if needs_fasta_copy:
         print(f"Copying FASTA file from {src_fasta} to {target_fasta}")
         try:
             shutil.copy2(src_fasta, target_fasta)
         except Exception as e:
             print(f"Warning: Failed to copy FASTA file {src_fasta}: {e}")
 
+    # Copy annotation if it doesn't exist or if source is newer
+    needs_annotation_copy = False
     if not os.path.exists(target_annotation_source):
-        print(f"Copying GTF file from {src_gtf_file} to {target_annotation_source}")
+        needs_annotation_copy = True
+    elif os.path.getmtime(src_gtf_file) > os.path.getmtime(target_annotation_source):
+        needs_annotation_copy = True
+        print(f"Source annotation is newer than cached copy, updating...")
+
+    if needs_annotation_copy:
+        print(f"Copying annotation file from {src_gtf_file} to {target_annotation_source}")
         try:
             shutil.copy2(src_gtf_file, target_annotation_source)
         except Exception as e:
-            print(f"Warning: Failed to copy GTF file: {e}")
+            print(f"Warning: Failed to copy annotation file: {e}")
 
 def create_sample_directories(config, sample_name):
     """Create the necessary directory structure for a specific sample"""

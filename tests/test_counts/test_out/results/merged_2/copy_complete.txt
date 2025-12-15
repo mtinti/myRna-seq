@@ -1,0 +1,17 @@
+Results copied successfully for merged_2
+Timestamp: Mon 15 Dec 2025 18:14:06 GMT
+----------------------------------------
+Run tag group containing samples: SAMPLE_04a SAMPLE_04b
+----------------------------------------
+Copied:
+- QC results
+- Coverage tracks (bigWig)
+- Feature counts
+- Benchmark summary
+----------------------------------------
+CLEANUP PERFORMED:
+Removed processing directories:
+- tests/test_counts/test_out/processing/SAMPLE_04a
+- tests/test_counts/test_out/processing/SAMPLE_04b
+- tests/test_counts/test_out/processing/merged/merged_2
+- tests/test_counts/test_out/processing/merged_2

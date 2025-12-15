@@ -1,0 +1,14 @@
+Results copied successfully for SAMPLE_04
+Timestamp: Mon 15 Dec 2025 18:14:10 GMT
+----------------------------------------
+Copied:
+- QC results
+- Coverage tracks (bigWig)
+- Feature counts
+- Benchmark summary
+----------------------------------------
+CLEANUP PERFORMED:
+Removed processing directories:
+- tests/test_counts/test_out/processing/SAMPLE_04
+- tests/test_counts/test_out/processing/merged/SAMPLE_04
+- tests/test_counts/test_out/processing/SAMPLE_04

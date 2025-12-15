@@ -1,0 +1,8 @@
+All results have been copied to the results directory
+Timestamp: Mon 15 Dec 2025 18:14:25 GMT
+Number of samples processed: 13
+Number of run tags/groups: 10
+Configuration used:
+- Copy FASTQ files: False
+- Copy BAM files: False
+- Cleanup processing: true

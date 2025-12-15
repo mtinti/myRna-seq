@@ -1,0 +1,5 @@
+Completed copying all results
+Timestamp: Mon 15 Dec 2025 18:14:25 GMT
+All individual copy operations completed successfully
+Removing reference directory: tests/test_counts/test_out/processing/reference
+Successfully removed: tests/test_counts/test_out/processing/reference

@@ -1,0 +1,46 @@
+RNA-Seq QC report
+-----------------------------------
+
+>>>>>>> Input
+
+    bam file = tests/test_counts/test_out/processing/SAMPLE_01/SAMPLE_01.picard.bam
+    gff file = tests/test_counts/test_out/processing/reference/test.gtf
+    counting algorithm = uniquely-mapped-reads
+    protocol = non-strand-specific
+    5'-3' bias region size = 100
+    5'-3' bias number of top transcripts = 1000
+
+
+>>>>>>> Reads alignment
+
+    reads aligned (left/right) = 20 / 20
+    read pairs aligned  = 20
+    total alignments = 40
+    secondary alignments = 0
+    non-unique alignments = 0
+    aligned to genes  = 40
+    ambiguous alignments = 0
+    no feature assigned = 0
+    not aligned = 0
+    SSP estimation (fwd/rev) = 0 / 1
+
+
+>>>>>>> Reads genomic origin
+
+    exonic =  40 (100%)
+    intronic = 0 (0%)
+    intergenic = 0 (0%)
+    overlapping exon = 0 (0%)
+
+
+>>>>>>> Transcript coverage profile
+
+    5' bias = 0.16
+    3' bias = 1.03
+    5'-3' bias = 0.15
+
+
+>>>>>>> Junction analysis
+
+    reads at junctions = 0
+

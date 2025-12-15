@@ -1,0 +1,12 @@
+step	s	h:m:s	max_rss	max_vms	max_uss	max_pss	io_in	io_out	mean_load	cpu_time
+align_paired	0.55	0:00:00	0	0	0	0	0.00	0.00	0.00	0
+checksum_paired	0.36	0:00:00	0	0	0	0	0.00	0.00	0.00	0
+copy_paired_local	0.29	0:00:00	0	0	0	0	0.00	0.00	0.00	0
+coverage_all	0.58	0:00:00	0	0	0	0	0.00	0.00	0.00	0
+coverage_unique	0.50	0:00:00	0	0	0	0	0.00	0.00	0.00	0
+fastp_paired	0.57	0:00:00	0	0	0	0	0.00	0.00	0.00	0
+featurecounts_paired_all	0.40	0:00:00	0	0	0	0	0.00	0.00	0.00	0
+featurecounts_paired_unique	0.32	0:00:00	0	0	0	0	0.00	0.00	0.00	0
+markduplicates	1.39	0:00:01	0	0	0	0	0.00	0.00	0.67	0
+qualimap_bamqc	3.62	0:00:03	0	0	0	0	0.00	0.00	40.45	0
+qualimap_rnaseq	2.93	0:00:02	0	0	0	0	0.00	0.00	30.51	0
