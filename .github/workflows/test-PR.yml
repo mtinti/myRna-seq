@@ -8,12 +8,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Python for FTP server
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
-      
+
       - name: Install pyftpdlib and start FTP server
         run: |
           pip install pyftpdlib
@@ -21,9 +21,9 @@ jobs:
           python ftp_server.py &
           echo $! > $GITHUB_WORKSPACE/ftp_server.pid
           sleep 3
-          curl ftp://localhost:21/ || echo "FTP server connection test failed"
+          curl ftp://localhost:2121/ || echo "FTP server connection test failed"
           echo "FTP server started with PID: $(cat $GITHUB_WORKSPACE/ftp_server.pid)"
-       
+
       - name: Install Miniforge and Snakemake
         shell: bash -l {0}
         run: |
@@ -40,27 +40,31 @@ jobs:
         run: |
           source "${HOME}/conda/etc/profile.d/conda.sh"
           conda activate snakemake
-          
+
           echo "Running dry-run test..."
-          snakemake --cores 10 --use-conda --dry-run --config \
+          snakemake --cores 4 --use-conda --dry-run --config \
             processing_dir="tests/test_counts/test_out/processing" \
             results_dir="tests/test_counts/test_out/results" \
             benchmark_dir="tests/test_counts/test_out/benchmarks" \
             reference_fasta="tests/test_counts/genome/random_genome.fa" \
             gtf_file="tests/test_counts/genome/annotation.gtf" \
             samples_csv="test_samples_long.csv" \
-            cleanup_processing='True'
+            cleanup_processing='True' \
+            cores_align=2 cores_coverage=2 cores_fastp=2 cores_featurecounts=2 \
+            cores_flagstat=2 cores_nanopore_align=2 max_cores=2
 
           echo "Running full test with FTP..."
-          snakemake --cores 10 --use-conda --config \
+          snakemake --cores 4 --use-conda --config \
             processing_dir="tests/test_counts/test_out/processing" \
             results_dir="tests/test_counts/test_out/results" \
             benchmark_dir="tests/test_counts/test_out/benchmarks" \
             reference_fasta="tests/test_counts/genome/random_genome.fa" \
             gtf_file="tests/test_counts/genome/annotation.gtf" \
             samples_csv="test_samples_long.csv" \
-            cleanup_processing='True'
-          
+            cleanup_processing='True' \
+            cores_align=2 cores_coverage=2 cores_fastp=2 cores_featurecounts=2 \
+            cores_flagstat=2 cores_nanopore_align=2 max_cores=2
+
           ls tests/test_counts/test_out/results -l
           head tests/test_counts/test_out/results/SAMPLE_02/SAMPLE_02_counts_single_all.txt
 

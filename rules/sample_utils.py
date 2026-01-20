@@ -1,6 +1,7 @@
 """
 Utility functions for sample handling in the RNA-seq pipeline.
 """
+import gzip
 import os
 import pandas as pd
 import shutil
@@ -35,25 +36,52 @@ def copy_reference_files(config):
         fasta_stem = os.path.splitext(fasta_stem)[0]
     target_fasta = os.path.join(target_dir, fasta_basename)
     target_genome_base = os.path.join(target_dir, fasta_stem)
-    target_gtf_file = os.path.join(target_dir, os.path.basename(src_gtf_file))
+
+    annotation_basename = os.path.basename(src_gtf_file)
+    annotation_stem, annotation_ext = os.path.splitext(annotation_basename)
+    if annotation_stem.endswith(".gff"):
+        annotation_stem = os.path.splitext(annotation_stem)[0]
+
+    target_annotation_source = os.path.join(target_dir, annotation_basename)
+    if annotation_ext.lower() in (".gff", ".gff3"):
+        target_gtf_file = os.path.join(target_dir, f"{annotation_stem}.gtf")
+    else:
+        target_gtf_file = target_annotation_source
 
     config["processing_reference_fasta"] = target_fasta
     config["processing_genome_index"] = target_genome_base
+    config["processing_annotation_source"] = target_annotation_source
     config["processing_gtf_file"] = target_gtf_file
 
+    # Copy FASTA if it doesn't exist or if source is newer
+    needs_fasta_copy = False
     if not os.path.exists(target_fasta):
+        needs_fasta_copy = True
+    elif os.path.getmtime(src_fasta) > os.path.getmtime(target_fasta):
+        needs_fasta_copy = True
+        print(f"Source FASTA is newer than cached copy, updating...")
+
+    if needs_fasta_copy:
         print(f"Copying FASTA file from {src_fasta} to {target_fasta}")
         try:
             shutil.copy2(src_fasta, target_fasta)
         except Exception as e:
             print(f"Warning: Failed to copy FASTA file {src_fasta}: {e}")
 
-    if not os.path.exists(target_gtf_file):
-        print(f"Copying GTF file from {src_gtf_file} to {target_gtf_file}")
+    # Copy annotation if it doesn't exist or if source is newer
+    needs_annotation_copy = False
+    if not os.path.exists(target_annotation_source):
+        needs_annotation_copy = True
+    elif os.path.getmtime(src_gtf_file) > os.path.getmtime(target_annotation_source):
+        needs_annotation_copy = True
+        print(f"Source annotation is newer than cached copy, updating...")
+
+    if needs_annotation_copy:
+        print(f"Copying annotation file from {src_gtf_file} to {target_annotation_source}")
         try:
-            shutil.copy2(src_gtf_file, target_gtf_file)
+            shutil.copy2(src_gtf_file, target_annotation_source)
         except Exception as e:
-            print(f"Warning: Failed to copy GTF file: {e}")
+            print(f"Warning: Failed to copy annotation file: {e}")
 
 def create_sample_directories(config, sample_name):
     """Create the necessary directory structure for a specific sample"""
@@ -282,6 +310,58 @@ def validate_reference_inputs(config):
         )
 
     print(f"Found reference FASTA at {fasta_path} and GTF at {gtf_path}")
+
+
+def validate_feature_attribute(gtf_path, feature_type, attribute_key):
+    """Ensure the requested feature and attribute exist in a GTF/GFF3 file."""
+
+    if not feature_type or not attribute_key:
+        raise ValueError(
+            "ERROR: feature_type and attribute_type must be set in the config to validate the annotation."
+        )
+
+    found_feature = False
+    found_attribute = False
+    open_func = gzip.open if gtf_path.endswith(".gz") else open
+
+    with open_func(gtf_path, "rt") as handle:
+        for line in handle:
+            if not line or line.startswith("#"):
+                continue
+
+            parts = line.rstrip("\n").split("\t")
+            if len(parts) < 9 or parts[2] != feature_type:
+                continue
+
+            found_feature = True
+            attributes = parts[8]
+
+            for field in attributes.split(";"):
+                field = field.strip()
+                if not field:
+                    continue
+
+                if " " in field:
+                    key, _ = field.split(" ", 1)
+                elif "=" in field:
+                    key, _ = field.split("=", 1)
+                else:
+                    continue
+
+                if key == attribute_key:
+                    found_attribute = True
+                    break
+
+            if found_attribute:
+                break
+
+    if not found_feature:
+        raise ValueError(f"ERROR: Feature type '{feature_type}' not found in {gtf_path}.")
+
+    if not found_attribute:
+        raise ValueError(
+            f"ERROR: Attribute '{attribute_key}' not found for feature type '{feature_type}' in {gtf_path}."
+        )
 
 def is_sample_completed(config, sample, samples_df):
     """Check if a sample has already been processed"""

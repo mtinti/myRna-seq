@@ -23,6 +23,7 @@ cores_fastp: 8
 cores_default: 1
 max_cores: 8
 feature_type: "CDS"
+attribute_type: "gene_id"  # Attribute used for grouping features (e.g., gene_id, transcript_id, ID)
 
 # Nanopore-specific settings
 nanopore_preset: "map-ont"        # Minimap2 preset for nanopore
