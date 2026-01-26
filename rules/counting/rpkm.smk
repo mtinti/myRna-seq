@@ -41,7 +41,7 @@ rule rpkm_paired_all:
     conda:
         "../../envs/rpkm.yaml"
     script:
-        "rules/scripts/calc_rpkm.py"
+        "../scripts/calc_rpkm.py"
 
 
 rule rpkm_paired_unique:
@@ -56,7 +56,7 @@ rule rpkm_paired_unique:
     conda:
         "../../envs/rpkm.yaml"
     script:
-        "rules/scripts/calc_rpkm.py"
+        "../scripts/calc_rpkm.py"
 
 
 rule rpkm_paired_complete:
@@ -90,7 +90,7 @@ rule rpkm_single_all:
     conda:
         "../../envs/rpkm.yaml"
     script:
-        "rules/scripts/calc_rpkm.py"
+        "../scripts/calc_rpkm.py"
 
 
 rule rpkm_single_unique:
@@ -105,7 +105,7 @@ rule rpkm_single_unique:
     conda:
         "../../envs/rpkm.yaml"
     script:
-        "rules/scripts/calc_rpkm.py"
+        "../scripts/calc_rpkm.py"
 
 
 rule rpkm_single_complete:
