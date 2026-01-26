@@ -35,6 +35,7 @@ def main() -> None:
     if not sample_columns:
         raise ValueError(f"No sample columns found in {input_path}")
 
+    counts_df.loc[:, sample_columns] = counts_df[sample_columns].astype(float)
     counts_matrix = counts_df[sample_columns].to_numpy(dtype=float)
     lengths = counts_df["Length"].to_numpy(dtype=float)
 
