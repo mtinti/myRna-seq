@@ -35,14 +35,14 @@ def main() -> None:
     if not sample_columns:
         raise ValueError(f"No sample columns found in {input_path}")
 
-    counts_df.loc[:, sample_columns] = counts_df[sample_columns].astype(float)
     counts_matrix = counts_df[sample_columns].to_numpy(dtype=float)
     lengths = counts_df["Length"].to_numpy(dtype=float)
 
     _log("Calculating RPKM values")
     rpkm_matrix = rpkm(counts_matrix, lengths)
 
-    counts_df.loc[:, sample_columns] = rpkm_matrix
+    for col_index, column in enumerate(sample_columns):
+        counts_df[column] = rpkm_matrix[:, col_index].astype(float)
 
     _log(f"Writing RPKM output to {output_path}")
     counts_df.to_csv(output_path, sep="\t", index=False)
