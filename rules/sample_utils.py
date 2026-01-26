@@ -381,6 +381,10 @@ def is_sample_completed(config, sample, samples_df):
             # Check if counts files exist
             paired_counts_all = os.path.join(config['results_dir'], effective_name, f"{effective_name}_counts_paired_all.txt")
             paired_counts_unique = os.path.join(config['results_dir'], effective_name, f"{effective_name}_counts_paired_unique.txt")
+
+            # Check if RPKM files exist
+            paired_rpkm_all = os.path.join(config['results_dir'], effective_name, f"{effective_name}_rpkm_paired_all.txt")
+            paired_rpkm_unique = os.path.join(config['results_dir'], effective_name, f"{effective_name}_rpkm_paired_unique.txt")
             
             # Check if coverage files exist
             all_bw = os.path.join(config['results_dir'], effective_name, f"{effective_name}_all.bw")
@@ -390,6 +394,8 @@ def is_sample_completed(config, sample, samples_df):
             final_results_exist = (
                 os.path.exists(paired_counts_all) and 
                 os.path.exists(paired_counts_unique) and
+                os.path.exists(paired_rpkm_all) and
+                os.path.exists(paired_rpkm_unique) and
                 os.path.exists(all_bw) and 
                 os.path.exists(unique_bw)
             )
@@ -397,6 +403,10 @@ def is_sample_completed(config, sample, samples_df):
             # Check if counts files exist
             single_counts_all = os.path.join(config['results_dir'], effective_name, f"{effective_name}_counts_single_all.txt")
             single_counts_unique = os.path.join(config['results_dir'], effective_name, f"{effective_name}_counts_single_unique.txt")
+
+            # Check if RPKM files exist
+            single_rpkm_all = os.path.join(config['results_dir'], effective_name, f"{effective_name}_rpkm_single_all.txt")
+            single_rpkm_unique = os.path.join(config['results_dir'], effective_name, f"{effective_name}_rpkm_single_unique.txt")
             
             # Check if coverage files exist
             all_bw = os.path.join(config['results_dir'], effective_name, f"{effective_name}_all.bw")
@@ -406,6 +416,8 @@ def is_sample_completed(config, sample, samples_df):
             final_results_exist = (
                 os.path.exists(single_counts_all) and 
                 os.path.exists(single_counts_unique) and
+                os.path.exists(single_rpkm_all) and
+                os.path.exists(single_rpkm_unique) and
                 os.path.exists(all_bw) and 
                 os.path.exists(unique_bw)
             )
