@@ -260,6 +260,13 @@ def get_featurecounts_flag(run_tag):
     else:
         return get_processing_path(f"{run_tag}/featurecounts_single_complete.flag")
 
+def get_rpkm_flag(run_tag):
+    """Get the appropriate RPKM flag based on run tag type"""
+    if is_paired_end(run_tag):
+        return get_processing_path(f"{run_tag}/rpkm_paired_complete.flag")
+    else:
+        return get_processing_path(f"{run_tag}/rpkm_single_complete.flag")
+
 def get_markduplicates_flag(wildcards):
     """Get the mark duplicates flag for a run tag or sample."""
     if isinstance(wildcards, dict):

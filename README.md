@@ -38,6 +38,8 @@ Coverage Tracks (bamCoverage)
     ↓
 Feature Counting (featureCounts)
     ↓
+RPKM Calculation
+    ↓
 Results & Cleanup
 
 * Step skipped for nanopore data

@@ -270,6 +270,7 @@ conditional_modules = [
     ("rules/coverage/single_coverage.smk", HAS_SINGLE_OR_NANO_EFFECTIVE),
     ("rules/counting/paired_counts.smk", HAS_PAIRED_EFFECTIVE),
     ("rules/counting/single_counts.smk", HAS_SINGLE_OR_NANO_EFFECTIVE),
+    ("rules/counting/rpkm.smk", HAS_PAIRED_EFFECTIVE or HAS_SINGLE_OR_NANO_EFFECTIVE),
 ]
 
 for module, should_include in conditional_modules:
@@ -303,8 +304,9 @@ workflow_steps = [
     "07 - BAM Quality Control",
     "08 - Coverage Tracks",
     "09 - Feature Counting",
-    "10 - Benchmark Analysis",
-    "11 - Copy Results"
+    "10 - RPKM Calculation",
+    "11 - Benchmark Analysis",
+    "12 - Copy Results"
 ]
 
 onsuccess:

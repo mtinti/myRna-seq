@@ -67,6 +67,7 @@ jobs:
 
           ls tests/test_counts/test_out/results -l
           head tests/test_counts/test_out/results/SAMPLE_02/SAMPLE_02_counts_single_all.txt
+          head tests/test_counts/test_out/results/SAMPLE_02/SAMPLE_02_rpkm_single_all.txt
 
       - name: Stop FTP server
         if: always()

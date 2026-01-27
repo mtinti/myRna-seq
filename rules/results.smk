@@ -14,6 +14,7 @@ rule copy_results:
         # Required inputs from previous steps - use helper functions to get type-specific flags
         qc_complete = lambda wildcards: get_qc_flag(wildcards.run_tag),
         featurecounts_complete = lambda wildcards: get_featurecounts_flag(wildcards.run_tag),
+        rpkm_complete = lambda wildcards: get_rpkm_flag(wildcards.run_tag),
         coverage_complete = lambda wildcards: get_coverage_flag(wildcards.run_tag),
         benchmark_summary = get_processing_path("{run_tag}/benchmarks_summary.txt")
     output:
@@ -93,6 +94,10 @@ rule copy_results:
         # Copy count files
         echo "Copying count files" >> {log}
         cp {params.proc_dir}/{wildcards.run_tag}_counts_*.txt {params.results_sample_dir}/ 2>> {log}
+
+        # Copy RPKM files
+        echo "Copying RPKM files" >> {log}
+        cp {params.proc_dir}/{wildcards.run_tag}_rpkm_*.txt {params.results_sample_dir}/ 2>> {log}
         
         # Copy benchmark summary file
         echo "Copying benchmark summary" >> {log}
@@ -181,6 +186,7 @@ rule copy_results:
         echo "- QC results" >> {output.complete}
         echo "- Coverage tracks (bigWig)" >> {output.complete}
         echo "- Feature counts" >> {output.complete}
+        echo "- RPKM values" >> {output.complete}
         echo "- Benchmark summary" >> {output.complete}
         
         if [ "{params.copy_bam}" = "true" ]; then
