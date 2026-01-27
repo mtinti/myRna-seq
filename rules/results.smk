@@ -355,7 +355,9 @@ rule copy_results_all:
         copy_fastq = config.get("copy_fastq", False),
         copy_bam = config.get("copy_bam", False),
         cleanup_processing = str(config.get("cleanup_processing", False)).lower(),
-        reference_dir = get_processing_path("reference")
+        reference_dir = get_processing_path("reference"),
+        gtf_file = config["processing_gtf_file"],
+        results_root = get_results_path()
     log:
         get_results_path("logs/copy_results_all.log")
     shell:
@@ -378,6 +380,10 @@ rule copy_results_all:
         echo "Completed copying all results" > {log}
         echo "Timestamp: $(date)" >> {log}
         echo "All individual copy operations completed successfully" >> {log}
+
+        # Copy GTF file used for quantification to results root
+        echo "Copying GTF file used for quantification" >> {log}
+        cp {params.gtf_file} {params.results_root}/ 2>> {log}
 
         # Remove reference directory if cleanup is enabled
         if [ "{params.cleanup_processing}" = "true" ]; then
