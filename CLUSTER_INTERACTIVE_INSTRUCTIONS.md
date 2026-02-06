@@ -54,65 +54,136 @@ cd myRna-seq
 # 7b. git pull (this step is every time)
 ```
 
-Pick a run directory on the node (`$TMPDIR` is node-local) and copy the
-pipeline repository plus your input data there.
+## 3) Prepare the input data
+
+Create an input data directory and copy your FASTQ files into it:
 
 ```bash
-RUN_DIR="$TMPDIR/myRna-seq-$USER-$(date +%Y%m%d_%H%M%S)"
-mkdir -p "$RUN_DIR"
-
-# Copy the pipeline repository (exclude git metadata to keep it small)
-rsync -a --exclude '.git' /cluster/majf_lab/mtinti/myRna-seq/ "$RUN_DIR/myRna-seq/"
-
-# Copy input FASTQs and references (examples)
-rsync -a /path/to/fastqs/ "$RUN_DIR/fastqs/"
-rsync -a /path/to/reference/ "$RUN_DIR/reference/"
+# 8. Create the input data directory
+mkdir -p indata
 ```
 
-> **Tip:** If your login node storage is not visible from the compute node,
-> replace the `rsync` steps with whatever transfer method you use on Dundee
-> (e.g., `scp` from a data transfer node).
+Copy your FASTQ files into a sample-specific subfolder. For example:
 
-## 3) Configure the workflow for node-local paths
+```
+indata/TbRIT-8166/V350168884_L02_B5GTBRjalrRAACA-4_1.fq.gz
+indata/TbRIT-8166/V350168884_L02_B5GTBRjalrRAACA-4_2.fq.gz
+indata/TbRIT-8166/V350194510_L02_B5GTBRjalrRAACA-4_1.fq.gz
+indata/TbRIT-8166/V350194510_L02_B5GTBRjalrRAACA-4_2.fq.gz
+```
 
-Set the paths in `config.yaml` to match where you staged the data. You can either
-edit the file directly or override values at runtime.
-
-Example override at runtime:
+## 4) Identify the high-performance scratch directory
 
 ```bash
-cd "$RUN_DIR/myRna-seq"
-
-snakemake --cores 40 \
-  --config \
-  processing_dir="$RUN_DIR/processing" \
-  results_dir="$RUN_DIR/results" \
-  benchmark_dir="$RUN_DIR/benchmarks" \
-  reference_fasta="$RUN_DIR/reference/genome.fa" \
-  gtf_file="$RUN_DIR/reference/annotation.gtf" \
-  samples_csv="$RUN_DIR/samples.csv"
+# 9. Find out where the high-performance local drive is on your node
+echo $TMPDIR/
+# You should see something like: /tmp/3544738.1.rhel9.q/
 ```
 
-## 4) Sync results back to persistent storage
+## 5) Prepare the sample CSV file
 
-When the workflow finishes, copy outputs back to your long-term storage:
+Create a sample CSV (e.g. `samples_rit.csv`). It should look like:
+
+```csv
+sample_name,read_type,source_type,file_path_1,file_path_2,checksum_1,checksum_2,run_tag
+SAMPLE_rit1,paired,local,indata/TbRIT-8166/V350168884_L02_B5GTBRjalrRAACA-4_1.fq.gz,indata/TbRIT-8166/V350168884_L02_B5GTBRjalrRAACA-4_2.fq.gz,db36979b3164a2a29c9af85e6b3072fd,01aad38e21bc8ea452612b10037a58a7,TbRIT-8166
+SAMPLE_rit2,paired,local,indata/TbRIT-8166/V350194510_L02_B5GTBRjalrRAACA-4_1.fq.gz,indata/TbRIT-8166/V350194510_L02_B5GTBRjalrRAACA-4_2.fq.gz,876109f629db0fef6c93918137d467a0,6871417faaf83beae9c72051a12519ce,TbRIT-8166
+```
+
+Key notes about the sample CSV:
+
+- **`sample_name`** must be unique for each row (e.g. `SAMPLE_rit1`, `SAMPLE_rit2`).
+- **`run_tag`** groups samples that belong to the same experiment; samples sharing a `run_tag` will be merged together.
+- **`checksum_1` / `checksum_2`** should contain the md5sum from BIG, to verify that the files you are analysing match what BIG produced.
+- Please read the myRna-seq README for a full description of all available columns.
+
+## 6) Create and edit the config file
 
 ```bash
-rsync -a "$RUN_DIR/results/" /path/to/output/results/
-rsync -a "$RUN_DIR/benchmarks/" /path/to/output/benchmarks/
+# 10. Make a copy of the default config
+cp config.yaml config_rit.yaml
 ```
 
-You can also archive logs if needed:
+This copy serves both as the configuration for your run and as a record of how the pipeline was executed. Parameters can also be overridden at the command line (see the myRna-seq README for details).
+
+Edit `config_rit.yaml` and apply the following changes:
+
+### a) Set the processing directory to the high-performance scratch
+
+Replace:
+
+```yaml
+processing_dir: "processing"
+```
+
+with the path from `$TMPDIR/`, for example:
+
+```yaml
+processing_dir: "/tmp/3544738.1.rhel9.q/processing"
+```
+
+This tells the pipeline to copy and process input files on the high-performance local drive. Results will be copied back to the `results/` folder automatically.
+
+### b) Set the reference genome and annotation
+
+Replace the default reference paths:
+
+```yaml
+reference_fasta: "reference/genome_427/tb427.fa"
+gtf_file: "reference/genome_427/tb427.gtf"
+```
+
+with the assembly you want to use. For example, the TriTrypDB v68 TREU927 assembly:
+
+```yaml
+reference_fasta: "reference/genome_927_68/TriTrypDB-68_TbruceiTREU927_Genome.fa"
+gtf_file: "reference/genome_927_68/TriTrypDB-68_TbruceiTREU927.gff"
+```
+
+Notes:
+- The `reference/genome_927_68/` directory should sit at the same level as `config_rit.yaml`.
+- The FASTA file **must** end with `.fa` — TriTrypDB files may need to be renamed from `.fasta`.
+- The pipeline can automatically generate a GTF file from a GFF, so providing a `.gff` is fine.
+
+### c) Point to your sample CSV
+
+Change:
+
+```yaml
+samples_csv: "samples_full.csv"
+```
+
+to:
+
+```yaml
+samples_csv: "samples_rit.csv"
+```
+
+### d) Enable BAM copying
+
+Change:
+
+```yaml
+copy_bam: False
+```
+
+to:
+
+```yaml
+copy_bam: True
+```
+
+This copies the BAM files from the processing directory back into the results folder. The BAM files will serve as input for further processing with **myBarcode-Seq**.
+
+## 7) Run the pipeline
+
+From a conda environment with Snakemake available (e.g. `(snakemake) [mtinti@gpu-45 myRna-seq]$`):
 
 ```bash
-rsync -a "$RUN_DIR/.snakemake/log/" /path/to/output/snakemake-logs/
+# 11. Run the pipeline, matching the number of cores requested in qrsh
+snakemake --cores 40 --configfile config_rit.yaml --use-conda
 ```
 
----
+Sit back and watch the pipeline process the samples.
 
-### Notes
-
-- This approach runs the full workflow on **one node**; avoid Snakemake cluster
-  submission (`--cluster`) because compute nodes do not share a filesystem.
-- Set `max_cores` and the `cores_*` values in `config.yaml` to match your job
-  allocation if you override these defaults.
+> **Tip:** Keep separate config and sample files for each experiment. This way the pipeline run is fully reproducible without needing to store intermediate files.
