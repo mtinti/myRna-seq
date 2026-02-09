@@ -180,6 +180,10 @@ Contents of `results/`:
   are created and activated automatically.
 - The `processing_dir` value in your config file is always overridden by the
   script — you can ignore it or leave it at the default.
+- `CONFIGFILE=config_rit.yaml qsub ...` sets an environment variable that the
+  script reads via `${CONFIGFILE:-config.yaml}`. The `#$ -V` directive in the
+  script exports all environment variables to the job, so the value you set
+  before `qsub` is available inside the running job.
 - To change resource requests (cores, memory, disk), edit the SGE directives
   (`#$` lines) at the top of `submit_snakemake_cluster.sh`. Make sure `CORES`
   matches `#$ -pe smp`.
