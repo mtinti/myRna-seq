@@ -5,50 +5,31 @@
 #$ -cwd
 #$ -V
 #$ -j y
-#$ -N snakemake_oligo
-#$ -o snakemake_oligo_errors_$JOB_ID
+#$ -N snakemake_rnaseq
+#$ -o snakemake_rnaseq_$JOB_ID.log
 #$ -pe smp 40
 
 # Exit on error and undefined variables
 set -e
 set -u
 
-WORKDIR="${SGE_O_WORKDIR:-$PWD}"
-JOB_ID="${JOB_ID:-manual}"
-RUN_ROOT="${TMPDIR:-/tmp}"
-RUN_DIR="$RUN_ROOT/myRna-seq-${USER}-${JOB_ID}"
-RESULTS_DEST="${RESULTS_DEST:-$WORKDIR}"
+# ── Activate conda ──────────────────────────────────────────────
+eval "$(conda shell.bash hook)"
+conda activate snakemake
 
+# ── User-configurable variables ─────────────────────────────────
 CORES="${CORES:-40}"
-CONFIG_OVERRIDES=(
-  "processing_dir=$RUN_DIR/processing"
-  "results_dir=$RUN_DIR/results"
-  "benchmark_dir=$RUN_DIR/benchmarks"
-)
+CONFIGFILE="${CONFIGFILE:-config.yaml}"
 
-mkdir -p "$RUN_DIR"
+# ── Override processing_dir to high-performance scratch ─────────
+# The pipeline copies final outputs from processing_dir to results_dir
+# internally, so results land directly in results/ (persistent storage).
+# No rsync needed — this is the same approach as the interactive workflow.
+PROCESSING_DIR="${TMPDIR:-/tmp}/processing"
 
-rsync -a \
-  --exclude '.git' \
-  --exclude 'processing' \
-  --exclude 'results' \
-  --exclude 'benchmarks' \
-  "$WORKDIR/" "$RUN_DIR/myRna-seq/"
-
-cd "$RUN_DIR/myRna-seq"
-
-SNK_ARGS=(--cores "$CORES" --config "${CONFIG_OVERRIDES[@]}")
-
-snakemake "${SNK_ARGS[@]}"
-
-mkdir -p "$RESULTS_DEST/results" "$RESULTS_DEST/benchmarks" "$RESULTS_DEST/snakemake-logs"
-
-rsync -a "$RUN_DIR/results/" "$RESULTS_DEST/results/"
-rsync -a "$RUN_DIR/benchmarks/" "$RESULTS_DEST/benchmarks/"
-
-if [[ -d "$RUN_DIR/.snakemake/log" ]]; then
-  rsync -a "$RUN_DIR/.snakemake/log/" "$RESULTS_DEST/snakemake-logs/"
-fi
-
-echo "Run directory: $RUN_DIR"
-echo "Results synced to: $RESULTS_DEST"
+# ── Run Snakemake ───────────────────────────────────────────────
+snakemake \
+  --cores "$CORES" \
+  --configfile "$CONFIGFILE" \
+  --use-conda \
+  --config "processing_dir=$PROCESSING_DIR"
