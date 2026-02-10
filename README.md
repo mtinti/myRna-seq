@@ -172,6 +172,41 @@ Additional details about the container, including the software stack, are
 available in the companion repository:
 [mtinti/myRna-seq-docker](https://github.com/mtinti/myRna-seq-docker).
 
+### Running with Singularity on HPC filesystems
+
+When running with Singularity on shared HPC filesystems, the container needs
+access to the full host paths used by the workflow. Use absolute paths in your
+configuration and bind the project directory when launching Snakemake.
+
+```bash
+snakemake --cores 40 \
+  --configfile config_rit.yaml \
+  --use-singularity \
+  --singularity-args "-B /gpfs/uod-scale-01/cluster/majf_lab/mtinti --pwd /gpfs/uod-scale-01/cluster/majf_lab/mtinti/myRna-seq"
+```
+
+In the config file, provide full paths for the core directories. For example:
+
+```yaml
+# Core directories
+processing_dir: "/tmp/3549775.1.rhel9.q/processing"
+results_dir: "/gpfs/uod-scale-01/cluster/majf_lab/mtinti/myRna-seq/results_singularity"
+benchmark_dir: "/gpfs/uod-scale-01/cluster/majf_lab/mtinti/myRna-seq/benchmarks"
+```
+
+Also use full absolute paths in the samples sheet (`file_path_1` and
+`file_path_2`) so files are visible inside the container runtime. Example:
+
+```csv
+sample_name,read_type,source_type,file_path_1,file_path_2,checksum_1,checksum_2,run_tag
+SAMPLE_rit1,paired,local,/gpfs/uod-scale-01/cluster/majf_lab/mtinti/myRna-seq/indata/TbRIT-8166/V350168884_L02_B5GTBRjalrRAACA-4_1.fq.gz,/gpfs/uod-scale-01/cluster/majf_lab/mtinti/myRna-seq/indata/TbRIT-8166/V350168884_L02_B5GTBRjalrRAACA-4_2.fq.gz,db36979b3164a2a29c9af85e6b3072fd,01aad38e21bc8ea452612b10037a58a7,TbRIT-8166
+SAMPLE_rit2,paired,local,/gpfs/uod-scale-01/cluster/majf_lab/mtinti/myRna-seq/indata/TbRIT-8166/V350194510_L02_B5GTBRjalrRAACA-4_1.fq.gz,/gpfs/uod-scale-01/cluster/majf_lab/mtinti/myRna-seq/indata/TbRIT-8166/V350194510_L02_B5GTBRjalrRAACA-4_2.fq.gz,876109f629db0fef6c93918137d467a0,6871417faaf83beae9c72051a12519ce,TbRIT-8166
+```
+
+You can pull the Singularity image from the Docker release by following the
+instructions in:
+[mtinti/myRna-seq-docker](https://github.com/mtinti/myRna-seq-docker).
+
 ## Testing the Pipeline
 
 You can test the pipeline with the included test dataset:
