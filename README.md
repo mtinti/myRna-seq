@@ -172,6 +172,32 @@ Additional details about the container, including the software stack, are
 available in the companion repository:
 [mtinti/myRna-seq-docker](https://github.com/mtinti/myRna-seq-docker).
 
+### Running with Singularity on HPC filesystems
+
+When running with Singularity on shared HPC filesystems, the container needs
+access to the full host paths used by the workflow. Use absolute paths in your
+configuration and bind the project directory when launching Snakemake.
+
+```bash
+snakemake --cores 40 \
+  --configfile config_rit.yaml \
+  --use-singularity \
+  --singularity-args "-B /gpfs/uod-scale-01/cluster/majf_lab/mtinti --pwd /gpfs/uod-scale-01/cluster/majf_lab/mtinti/myRna-seq"
+```
+
+In the config file, provide full paths for the core directories. For example:
+
+```yaml
+# Core directories
+processing_dir: "/tmp/3549775.1.rhel9.q/processing"
+results_dir: "/gpfs/uod-scale-01/cluster/majf_lab/mtinti/myRna-seq/results_singularity"
+benchmark_dir: "/gpfs/uod-scale-01/cluster/majf_lab/mtinti/myRna-seq/benchmarks"
+```
+
+You can pull the Singularity image from the Docker release by following the
+instructions in:
+[mtinti/myRna-seq-docker](https://github.com/mtinti/myRna-seq-docker).
+
 ## Testing the Pipeline
 
 You can test the pipeline with the included test dataset:
