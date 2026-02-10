@@ -146,33 +146,7 @@ snakemake -n
 snakemake --cores 8
 ```
 
-### Running the pipeline with the provided Singularity container
-
-If you prefer to run the workflow with Singularity rather than Conda, you can
-retrieve the image with Singularity from the Docker Hub release and pass it to
-Snakemake:
-
-```bash
-# A Docker container is available at docker://mtinti/rna_seq:latest
-
-# Create the Singularity image from the Docker registry
-singularity pull rna_seq.sif docker://mtinti/rna_seq:latest
-
-# Clone the pipeline repository
-git clone https://github.com/mtinti/myRna-seq.git
-cd myRna-seq
-
-# Run the pipeline with the container
-snakemake --use-singularity \
-  --config singularity_image=/path/to/rna_seq.sif \
-  --cores 8
-```
-
-Additional details about the container, including the software stack, are
-available in the companion repository:
-[mtinti/myRna-seq-docker](https://github.com/mtinti/myRna-seq-docker).
-
-### Running with Singularity on HPC filesystems
+### Running with Singularity
 
 When running with Singularity on shared HPC filesystems, the container needs
 access to the full host paths used by the workflow. Use absolute paths in your
@@ -206,6 +180,11 @@ SAMPLE_rit2,paired,local,/gpfs/uod-scale-01/cluster/majf_lab/mtinti/myRna-seq/in
 You can pull the Singularity image from the Docker release by following the
 instructions in:
 [mtinti/myRna-seq-docker](https://github.com/mtinti/myRna-seq-docker).
+
+```bash
+# briefly
+singularity pull rna_seq.sif docker://mtinti/rna_seq:latest
+```
 
 ## Testing the Pipeline
 
