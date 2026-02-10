@@ -194,6 +194,15 @@ results_dir: "/gpfs/uod-scale-01/cluster/majf_lab/mtinti/myRna-seq/results_singu
 benchmark_dir: "/gpfs/uod-scale-01/cluster/majf_lab/mtinti/myRna-seq/benchmarks"
 ```
 
+Also use full absolute paths in the samples sheet (`file_path_1` and
+`file_path_2`) so files are visible inside the container runtime. Example:
+
+```csv
+sample_name,read_type,source_type,file_path_1,file_path_2,checksum_1,checksum_2,run_tag
+SAMPLE_rit1,paired,local,/gpfs/uod-scale-01/cluster/majf_lab/mtinti/myRna-seq/indata/TbRIT-8166/V350168884_L02_B5GTBRjalrRAACA-4_1.fq.gz,/gpfs/uod-scale-01/cluster/majf_lab/mtinti/myRna-seq/indata/TbRIT-8166/V350168884_L02_B5GTBRjalrRAACA-4_2.fq.gz,db36979b3164a2a29c9af85e6b3072fd,01aad38e21bc8ea452612b10037a58a7,TbRIT-8166
+SAMPLE_rit2,paired,local,/gpfs/uod-scale-01/cluster/majf_lab/mtinti/myRna-seq/indata/TbRIT-8166/V350194510_L02_B5GTBRjalrRAACA-4_1.fq.gz,/gpfs/uod-scale-01/cluster/majf_lab/mtinti/myRna-seq/indata/TbRIT-8166/V350194510_L02_B5GTBRjalrRAACA-4_2.fq.gz,876109f629db0fef6c93918137d467a0,6871417faaf83beae9c72051a12519ce,TbRIT-8166
+```
+
 You can pull the Singularity image from the Docker release by following the
 instructions in:
 [mtinti/myRna-seq-docker](https://github.com/mtinti/myRna-seq-docker).
