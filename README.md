@@ -191,13 +191,17 @@ singularity pull rna_seq.sif docker://mtinti/rna_seq:latest
 You can test the pipeline with the included test dataset:
 
 ```bash
-snakemake --cores 10 --config \
-processing_dir="tests/test_counts/new_branch/processing" \
-results_dir="tests/test_counts/new_branch/results" \
-benchmark_dir="tests/test_counts/new_branch/benchmarks" \
-reference_fasta="tests/test_counts/genome/random_genome.fa" \
-gtf_file="tests/test_counts/genome/annotation.gtf" \
-samples_csv="test_samples_local.csv"```
+snakemake --cores 4 --use-conda --config \
+            processing_dir="tests/test_counts/test_out/processing" \
+            results_dir="tests/test_counts/test_out/results" \
+            benchmark_dir="tests/test_counts/test_out/benchmarks" \
+            reference_fasta="tests/test_counts/genome/random_genome.fa" \
+            gtf_file="tests/test_counts/genome/annotation.gtf" \
+            samples_csv="test_samples_local.csv" \
+            cleanup_processing='True' \
+            cores_align=2 cores_coverage=2 cores_fastp=2 cores_featurecounts=2 \
+            cores_flagstat=2 cores_nanopore_align=2 max_cores=2
+```
 
 Make sure the FASTA you reference ends with `.fa`; other extensions will cause
 the workflow to abort during validation.
