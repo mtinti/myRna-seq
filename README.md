@@ -208,13 +208,11 @@ the workflow to abort during validation.
 
 Expected output from the test dataset:
 
-Features
----------------------------
-gene1: 10 reads total
-gene2: 8 reads total
-gene3: 2 reads total
----------------------------
-
+| Gene | Counts 
+|------|-------|
+| gene1 | 10
+| gene2 | 8
+| gene3 | 2
 
 ## Sample CSV Format
 
